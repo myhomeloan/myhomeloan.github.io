@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="color-scheme" content="light" />
+<title>My Home Loan | Complete planner</title>
+<style>
+:root{
+  --cloth:#1E3B31;
+  --cloth-2:#2F5647;
+  --paper:#F7F2E4;
+  --paper-alt:#EDF0DF;
+  --rule:#D8CBA6;
+  --ink:#221D15;
+  --ink-soft:#6B6152;
+  --brass:#93701F;
+  --stamp:#9C3A2C;
+  --radius:5px;
+  --radius-lg:8px;
+  --shadow:0 1px 2px rgba(34,29,21,.06), 0 8px 20px rgba(34,29,21,.05);
+  --font-display:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  --font-mono:"IBM Plex Mono","SF Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:var(--font-body);background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased}
+.hidden{display:none!important}
+
+.loading-screen{min-height:100vh;display:grid;place-items:center;background:var(--cloth);color:var(--paper)}
+.loading-stamp{font-family:var(--font-display);font-size:19px;letter-spacing:.04em;border:1.5px solid var(--paper);padding:13px 22px;border-radius:2px;opacity:.9}
+
+.app{min-height:100vh;padding-bottom:56px;animation:appIn .35s ease}
+@keyframes appIn{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion: reduce){.app{animation:none}}
+
+header.cover{background:linear-gradient(180deg,var(--cloth),var(--cloth-2));color:#F3EFE1;padding:22px 20px 0;border-bottom:4px solid var(--brass)}
+.cover-inner{max-width:1200px;margin:0 auto;padding-bottom:18px;display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.cover-eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#C9D9CE;opacity:.9;margin-bottom:6px}
+.cover-title{font-family:var(--font-display);font-size:clamp(23px,3.2vw,33px);margin:0;font-weight:600;letter-spacing:.01em}
+.cover-sub{margin:5px 0 0;color:#CFE0D4;font-size:13.5px;max-width:48ch}
+.cover-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.save-status{font-family:var(--font-mono);font-size:11px;letter-spacing:.05em;padding:6px 10px;border-radius:3px;background:rgba(255,255,255,.08);color:#D8E6DB}
+.save-status.status-error{background:rgba(156,58,44,.4);color:#FBD9D2}
+
+button,.btn{font-family:var(--font-body);font-weight:600;font-size:13px;border:1px solid transparent;border-radius:4px;padding:8px 13px;cursor:pointer;background:var(--brass);color:#2A2107}
+button.ghost{background:rgba(255,255,255,.09);color:#EFE8D6;border-color:rgba(239,232,214,.35)}
+button.secondary{background:#EAE3CB;color:var(--ink);border-color:var(--rule)}
+button.danger{background:var(--stamp);color:#FBEAE6}
+button.small-btn{padding:6px 9px;font-size:12px}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+
+.tabs{max-width:1200px;margin:0 auto;display:flex;gap:3px;overflow-x:auto;padding:14px 20px 0}
+.tab{flex:0 0 auto;font-family:var(--font-display);font-size:13.5px;background:#DED2A9;color:#463B21;border:none;padding:9px 16px 8px;border-radius:5px 5px 0 0;clip-path:polygon(7% 0,100% 0,93% 100%,0 100%);position:relative;top:1px;opacity:.72;white-space:nowrap}
+.tab.active{background:var(--paper);color:var(--ink);opacity:1;font-weight:700}
+
+main{max-width:1200px;margin:0 auto;padding:0 20px}
+.section{display:none;padding-top:16px;scroll-margin-top:155px}
+.section.active{display:block;animation:fade .25s ease}
+@media (prefers-reduced-motion: reduce){.section.active{animation:none}}
+@keyframes fade{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+
+.notice{background:var(--paper-alt);border:1px solid var(--rule);border-left:3px solid var(--cloth-2);padding:10px 13px;border-radius:3px;margin:14px 0;font-size:13px;color:var(--ink-soft)}
+
+.grid{display:grid;gap:14px}
+.grid.kpi{grid-template-columns:repeat(auto-fit,minmax(196px,1fr))}
+.grid.two{grid-template-columns:repeat(auto-fit,minmax(380px,1fr))}
+
+.sheet{background:var(--paper);border:1px solid var(--rule);border-left:3px solid var(--cloth-2);border-radius:var(--radius-lg);box-shadow:var(--shadow);padding:18px}
+.sheet h2{font-family:var(--font-display);margin:0 0 4px;font-size:19px}
+.sheet h3{font-family:var(--font-display);margin:0 0 10px;font-size:16px}
+.sheet .sub{color:var(--ink-soft);font-size:12.5px;margin:0 0 12px}
+
+.kpi-card{padding:14px 16px}
+.kpi-label{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+.kpi-value{font-family:var(--font-mono);font-size:23px;font-weight:600;margin-top:5px;font-variant-numeric:tabular-nums;word-break:break-word}
+.kpi-foot{font-size:11.5px;color:var(--ink-soft);margin-top:3px}
+
+label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:5px}
+.field{margin-bottom:11px}
+input,select,textarea{width:100%;border:1px solid var(--rule);border-radius:3px;padding:8px 10px;font:13.5px var(--font-body);background:#FFFDF7;color:var(--ink)}
+input[type=number]{font-family:var(--font-mono)}
+textarea{min-height:62px;resize:vertical;font-family:var(--font-body)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+@media(max-width:680px){.row{grid-template-columns:1fr}.grid.two{grid-template-columns:1fr}}
+
+.progress{height:9px;background:var(--paper-alt);border:1px solid var(--rule);border-radius:99px;overflow:hidden}
+.bar{height:100%;background:linear-gradient(90deg,var(--cloth-2),var(--brass))}
+.mini{font-size:11.5px;color:var(--ink-soft)}
+
+.stamp{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;padding:5px 10px;border:1.5px solid currentColor;border-radius:3px;transform:rotate(-2deg);color:var(--stamp)}
+.stamp.brass{color:var(--brass)}
+.stamp.cloth{color:var(--cloth-2)}
+@media (prefers-reduced-motion: no-preference){.stamp.pop{animation:stampPop .32s ease}}
+@keyframes stampPop{0%{transform:rotate(-2deg) scale(1.6);opacity:0}60%{transform:rotate(-2deg) scale(.96)}100%{transform:rotate(-2deg) scale(1);opacity:1}}
+
+.timeline{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:8px}
+.stage{padding:11px;border-radius:4px;border:1px solid var(--rule);background:var(--paper-alt);cursor:pointer;font-size:12.5px;text-align:left;font:inherit;color:var(--ink)}
+.stage strong{display:block;font-family:var(--font-display);font-size:13px}
+.stage small{display:block;color:var(--ink-soft);font-size:11px;margin-top:2px}
+.stage.done{background:#E4EDE2;border-color:#B9CBB4}
+.stage.current{background:#FBF0DC;border-color:var(--brass);box-shadow:inset 0 0 0 1.5px var(--brass)}
+
+.table-wrap{overflow:auto;max-height:520px;border:1px solid var(--rule);border-radius:4px}
+table{width:100%;border-collapse:collapse;min-width:740px;background:var(--paper)}
+th,td{padding:8px 10px;border-bottom:1px solid var(--rule);text-align:left;font-size:12.5px;vertical-align:middle}
+th{position:sticky;top:0;background:var(--cloth);color:#EFE8D6;font-weight:600;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;z-index:1}
+td.num{text-align:right;font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+tbody tr:nth-child(even){background:var(--paper-alt)}
+td input,td select{padding:6px 7px;font-size:12.5px}
+.tag{display:inline-block;border-radius:3px;padding:3px 7px;font-size:10.5px;background:#E4E0CC;color:#524A2E;font-family:var(--font-mono)}
+
+svg.chart{width:100%;height:auto;display:block}
+
+.helper{padding:11px 13px;border-left:3px solid var(--cloth-2);background:var(--paper-alt);border-radius:3px;font-size:12.5px;color:var(--ink)}
+.helper.warn{border-left-color:var(--brass);background:#FBF3DF}
+.helper.ok{border-left-color:#3F7A54;background:#E7F1E4}
+
+.inline-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.footer{margin-top:24px;text-align:center;color:var(--ink-soft);font-size:11px;font-family:var(--font-mono)}
+
+.playbook{display:grid;gap:9px}
+.play-item{display:flex;gap:11px;padding:11px;border:1px solid var(--rule);border-left:3px solid var(--brass);border-radius:4px;background:var(--paper-alt)}
+.play-item .mark{flex:0 0 auto;font-family:var(--font-mono);font-size:12px;color:var(--brass);font-weight:700;padding-top:1px}
+
+hr{border:0;border-top:1px solid var(--rule);margin:15px 0}
+
+/* v3 enhancements */
+.header-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.status-pill{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.04em;padding:5px 8px;border:1px solid rgba(255,255,255,.22);border-radius:99px;color:#D8E6DB;background:rgba(255,255,255,.06)}
+.metric-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:9px;margin:12px 0 14px}
+.metric-mini{background:var(--paper-alt);border:1px solid var(--rule);padding:10px 12px;border-radius:4px}
+.metric-mini .kpi-value{font-size:17px}
+.split-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.badge-ok,.badge-warn,.badge-danger,.badge-neutral{display:inline-block;padding:3px 7px;border-radius:99px;font-family:var(--font-mono);font-size:10px;font-weight:700}
+.badge-ok{background:#E2EFE2;color:#2E6540}.badge-warn{background:#F8EAC7;color:#7A5A14}.badge-danger{background:#F5DDD8;color:#8A3024}.badge-neutral{background:#E7E2D1;color:#5D5542}
+.amount-positive{color:#2F6D45}.amount-negative{color:#8A3024}
+.compact-table table{min-width:620px}
+.table-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:9px 0}.table-tools input{max-width:280px}
+.action-card{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;padding:11px;border:1px solid var(--rule);border-radius:4px;background:var(--paper-alt);margin-bottom:8px}
+.action-dot{width:9px;height:9px;border-radius:50%;background:var(--brass);margin-top:5px}.action-dot.done{background:#3F7A54}.action-dot.overdue{background:var(--stamp)}
+.summary-box{padding:13px;border:1px solid var(--rule);border-radius:4px;background:#FFFDF7}
+input[type="range"]{accent-color:var(--brass)}
+@media(max-width:520px){header.cover{padding-left:10px;padding-right:10px}.cover-actions{width:100%}.cover-actions button{flex:1 1 auto}.tabs{padding-left:10px;padding-right:10px}main{padding:0 10px}.sheet{padding:14px}.kpi-value{font-size:20px}.metric-strip{grid-template-columns:1fr 1fr}.action-card{grid-template-columns:auto 1fr}}
+@media print{header.cover,.tabs,.cover-actions,.inline-actions,.table-tools,button,.notice{display:none!important}.section{display:block!important}.sheet{box-shadow:none;break-inside:avoid}body{background:white}main{max-width:none}.table-wrap{max-height:none;overflow:visible}table{min-width:0}}
+
+
+/* v5 responsive ledger & analysis enhancements */
+.grid.two > .sheet{min-width:0}
+.analysis-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.65fr);gap:18px;align-items:start}
+.category-stack{display:grid;gap:9px}
+.category-card{border:1px solid var(--rule);border-radius:5px;background:#FFFDF7;padding:11px 12px;min-width:0}
+.category-card-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:start}
+.category-name{font-family:var(--font-display);font-weight:700;font-size:14px;min-width:0;overflow-wrap:anywhere}
+.category-amount{text-align:right;font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+.category-meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;color:var(--ink-soft);font-size:11.5px}
+.mini-bar{height:7px;margin-top:8px;background:var(--paper-alt);border:1px solid var(--rule);border-radius:999px;overflow:hidden}
+.mini-bar > span{display:block;height:100%;background:linear-gradient(90deg,var(--cloth-2),var(--brass));border-radius:999px}
+.source-stack{display:grid;gap:8px}
+.source-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:10px 11px;border:1px solid var(--rule);border-radius:4px;background:var(--paper-alt)}
+.source-row strong{overflow-wrap:anywhere}
+.source-row .num{font-family:var(--font-mono);font-weight:700;white-space:nowrap}
+.ledger-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.ledger-stats{display:flex;gap:8px;flex-wrap:wrap}
+.stat-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border:1px solid var(--rule);border-radius:99px;background:var(--paper-alt);font-family:var(--font-mono);font-size:10.5px;color:var(--ink-soft)}
+.stat-chip strong{color:var(--ink)}
+.inline-edit-select{min-width:185px}
+.cost-alert{border:1px solid var(--rule);border-left:3px solid var(--brass);background:#FBF3DF;border-radius:4px;padding:10px 12px;font-size:12.5px}
+@media(max-width:900px){.analysis-grid{grid-template-columns:1fr}}
+@media(max-width:680px){
+  .category-card-head{grid-template-columns:1fr}
+  .category-amount{text-align:left}
+  .ledger-head{align-items:stretch}
+  .ledger-stats{width:100%}
+}
+
+
+
+/* v6 navigation, accessibility & transaction finalisation */
+.tabs{
+  position:sticky;top:0;z-index:50;max-width:1200px;margin:0 auto;
+  display:block;overflow:visible;padding:10px 0 12px;
+  background:rgba(247,242,228,.97);border-bottom:1px solid var(--rule);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)
+}
+.nav-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.nav-label{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft);font-weight:700}
+.tab-jump{width:auto;min-width:210px;max-width:310px;padding:7px 10px;background:#FFFDF7}
+.tab-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.tab{
+  position:static;top:auto;clip-path:none;flex:none;min-height:42px;width:100%;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  white-space:normal;line-height:1.15;padding:9px 8px;border:1px solid var(--rule);
+  border-radius:6px;background:#E9E0C2;color:#51482F;opacity:1;
+  font-family:var(--font-body);font-size:12.5px;font-weight:650;transition:.14s ease
+}
+.tab:hover{background:#F1E8CD;border-color:#B9AA77;transform:translateY(-1px)}
+.tab.active{background:var(--cloth);color:#FFF8E6;border-color:var(--cloth);font-weight:750;box-shadow:0 2px 7px rgba(30,59,49,.18)}
+.tab:focus-visible{outline:3px solid #B98C28;outline-offset:2px}
+
+.row-actions{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;white-space:nowrap}
+button.edit-btn{background:#E7E2D1;color:var(--ink);border-color:var(--rule)}
+button.freeze-btn{background:#DDE9DF;color:#285139;border-color:#A9C0AD}
+button.unlock-btn{background:#F7ECD0;color:#6B4B08;border-color:#D7BD77}
+button.cancel-btn{background:#EFEAE0;color:var(--ink);border-color:var(--rule)}
+button:disabled{cursor:not-allowed;opacity:.5;transform:none!important}
+.lock-badge{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:4px 8px;font-family:var(--font-mono);font-size:10px;font-weight:750;letter-spacing:.03em;background:#E3EDE3;color:#315C40;border:1px solid #B8CEBC;white-space:nowrap}
+.open-badge{display:inline-flex;align-items:center;border-radius:99px;padding:4px 8px;font-family:var(--font-mono);font-size:10px;font-weight:700;background:#F4EBCF;color:#725618;border:1px solid #D8C795;white-space:nowrap}
+tr.row-locked td{background:#F3F2E9!important;color:#625D52}
+tr.row-editing td{background:#FFF8E5!important}
+.ledger-edit{min-width:115px;padding:6px 7px;font-size:12px}
+.ledger-edit.wide{min-width:170px}
+.ledger-control-note{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;padding:9px 11px;border:1px dashed var(--rule);border-radius:4px;background:#FFFDF7;color:var(--ink-soft);font-size:11.5px}
+.ledger-control-note strong{color:var(--ink)}
+.final-count{color:#315C40}
+.action-col{min-width:174px}
+.table-wrap table{border-collapse:separate;border-spacing:0}
+.table-wrap th:last-child{right:0;z-index:3}
+.table-wrap th:last-child,.table-wrap td:last-child{position:sticky;right:0;box-shadow:-6px 0 10px rgba(34,29,21,.04)}
+.table-wrap td:last-child{background:inherit}
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+@media(max-width:1000px){.tab-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:680px){
+  .tabs{position:static;padding:8px 0 10px;backdrop-filter:none;-webkit-backdrop-filter:none}
+  .nav-row{align-items:stretch;flex-direction:column;gap:5px}
+  .tab-jump{width:100%;max-width:none}
+  .tab-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+  .tab{min-height:40px;font-size:12px;padding:8px 6px}
+  .action-col{min-width:160px}
+}
+
+
+
+/* v7 linked JSON backup & custom indirect categories */
+.backup-panel{margin:12px 0 14px;padding:12px 14px;border:1px solid var(--rule);border-left:3px solid var(--brass);border-radius:5px;background:#FFFDF7;box-shadow:var(--shadow)}
+.backup-panel-head{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.backup-panel-title{font-family:var(--font-display);font-size:15px;font-weight:700}
+.backup-panel-sub{font-size:11.5px;color:var(--ink-soft);margin-top:3px;max-width:80ch}
+.backup-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.backup-status{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:99px;border:1px solid var(--rule);font:700 10.5px var(--font-mono);white-space:nowrap;background:var(--paper-alt);color:var(--ink-soft)}
+.backup-status.ok{background:#E2EFE2;color:#2E6540;border-color:#B9CBB4}
+.backup-status.warn{background:#F8EAC7;color:#7A5A14;border-color:#D8C795}
+.backup-status.error{background:#F5DDD8;color:#8A3024;border-color:#D7AAA1}
+.category-create{display:grid;grid-template-columns:minmax(180px,1.1fr) minmax(130px,.55fr) minmax(240px,1.5fr) auto;gap:8px;align-items:end;margin:10px 0 12px;padding:10px;border:1px dashed var(--rule);border-radius:5px;background:#FFFDF7}
+.category-create .field{margin:0}
+.category-create button{height:36px;white-space:nowrap}
+.category-chip-list{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.category-chip{display:inline-flex;align-items:center;padding:4px 7px;border-radius:99px;background:var(--paper-alt);border:1px solid var(--rule);font-size:10.5px;color:var(--ink-soft)}
+@media(max-width:850px){.category-create{grid-template-columns:1fr 1fr}.category-create .field:nth-child(3){grid-column:1/-1}.category-create button{width:100%}}
+@media(max-width:520px){.category-create{grid-template-columns:1fr}.category-create .field:nth-child(3){grid-column:auto}.backup-actions{width:100%}.backup-actions button{flex:1 1 145px}}
+
+</style>
+<style>
+:root{--ink:#20342e;--muted:#62746a;--paper:#fffefa;--cream:#f7f5ed;--accent:#274e3c;--stamp:#648b6e;--brass:#8a9d75;--line:#dce5d9}
+body{background:#f7f5ed!important;color:#20342e!important;font-family:Arial,system-ui,sans-serif}
+.cover{background:linear-gradient(130deg,#1e4030,#3f7655)!important;color:#fff!important;border-radius:0 0 28px 28px}
+.cover-title{font-family:Arial,system-ui,sans-serif!important;letter-spacing:-.04em}
+.cover-sub,.cover-eyebrow{color:#e4f0de!important}
+.app main{max-width:1260px;margin:auto}
+.sheet,.backup-panel{background:#fffefa!important;border:1px solid #dce5d9!important;border-radius:16px!important;box-shadow:0 5px 24px #294d3810!important}
+button:not(.ghost):not(.secondary):not(.danger):not(.cancel-btn){background:#274e3c;color:white;border-radius:9px}
+.tabs{background:#f7f5ed!important;scrollbar-width:thin}
+.tabs button{white-space:nowrap}
+@media(max-width:680px){.tab-grid{display:none!important}.tabs{position:sticky!important;top:0!important;z-index:50!important;background:#f7f5ed!important}.tab-jump{font-size:16px!important}}
+input,select,textarea{border-radius:7px}
+.starter-path{margin:14px 0;padding:20px 22px;border:1px solid #bcd3bd;border-radius:15px;background:linear-gradient(120deg,#edf4e9,#fffefa)}
+.starter-path strong{font-size:22px}.starter-path p{margin:8px 0 15px;color:#50695a}.starter-actions{display:flex;gap:9px;flex-wrap:wrap}.starter-actions button{padding:11px 13px}
+@media(max-width:680px){.starter-path{padding:16px}.starter-actions{display:grid;grid-template-columns:1fr 1fr}.starter-actions button:first-child{grid-column:1/-1}.backup-panel{margin-top:28px}}
+</style>
+</head>
+<body>
+
+<div id="loadingScreen" class="loading-screen"><div class="loading-stamp">Opening ledger…</div></div>
+
+<div id="app" class="app hidden">
+  <header class="cover">
+    <div class="cover-inner">
+      <div>
+        <div class="cover-eyebrow" id="coverEyebrow">A CLEARER VIEW OF YOUR LOAN</div>
+        <h1 class="cover-title">My Home Loan · Complete Planner</h1>
+        <p class="cover-sub">Track construction cost, funding, loan disbursement, protection and the fastest sustainable path to debt-free.</p>
+      </div>
+      <div class="cover-actions">
+        <span class="save-status" id="saveStatus">Saved</span><span class="status-pill" id="storageMode">Browser storage</span>
+        <button class="ghost" onclick="exportBackup()">Export Backup</button>
+        <button class="ghost" onclick="document.getElementById('importFile').click()">Import Backup</button>
+        <input id="importFile" class="hidden" type="file" accept="application/json" onchange="importBackup(event)">
+        <button class="ghost" onclick="window.print()">Print</button><button class="ghost" onclick="resetDemo()">Reset</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div id="offlineNotice" class="notice hidden" style="border-left-color:var(--stamp)">Persistent browser storage is unavailable in this session. Entries may not survive closing the tab, so use <strong>Export Backup</strong> regularly.</div>
+    <div class="notice" style="border-left-color:var(--brass)"><strong>Your local workspace:</strong> start with a blank plan, fill in any section, and export a JSON backup. Your entries stay in this browser; nothing is sent to us.</div>
+    <div class="starter-path" id="starterPath"><strong>Start with your details</strong><p>Everything below is editable. Add your loan terms, then record a payment, budget, family member or insurance policy. Changes save on this device; Export Backup makes a portable JSON copy. If you started a plan on the first site, use Import Backup here to continue.</p><div class="starter-actions"><button type="button" onclick="showTab('loan',true)">Enter loan details</button><button type="button" onclick="showTab('insurance',true)">Add insurance policy</button><button type="button" onclick="showTab('contractor',true)">Record payment</button></div></div>
+    <div class="tabs" id="tabs"></div>
+    <section id="overview" class="section"></section>
+    <section id="loan" class="section"></section>
+    <section id="schedule" class="section"></section>
+    <section id="contractor" class="section"></section>
+    <section id="budget" class="section"></section>
+    <section id="indirect" class="section"></section>
+    <section id="processing" class="section"></section>
+    <section id="actions" class="section"></section>
+    <section id="emergency" class="section"></section>
+    <section id="family" class="section"></section>
+    <section id="insurance" class="section"></section>
+    <section id="strategy" class="section"></section>
+    <div class="backup-panel" id="backupPanel">
+      <div class="backup-panel-head">
+        <div>
+          <div class="backup-panel-title">Optional folder backup</div>
+          <div class="backup-panel-sub">Link a folder once and this ledger will automatically update <strong>home-loan-ledger-backup.json</strong> after saved changes. Use a folder you control; this feature writes a JSON backup only after you grant browser folder access.</div>
+        </div>
+        <div class="backup-actions">
+          <span class="backup-status" id="folderBackupStatus">Not linked</span>
+          <button class="secondary small-btn" id="linkBackupBtn" onclick="linkBackupFolder()">Choose Backup Folder</button>
+          <button class="secondary small-btn" id="saveJsonBtn" onclick="saveJsonNow()">Save JSON Now</button>
+          <button class="secondary small-btn" id="unlinkBackupBtn" onclick="unlinkBackupFolder()">Unlink</button>
+        </div>
+      </div>
+    </div>
+    <div class="footer">My Home Loan · Local planner · Direct + indirect construction cost tracker · Data stays in this browser unless exported</div>
+  </main>
+</div>
+
+<script>
+/* ---------- constants ---------- */
+const STORAGE_KEY='mhl-detailed-local-v1';
+const STAGES=['Application Submitted','Document Collection','Legal / Title Review','Technical Valuation','Credit Approval','Sanctioned','Agreement Signed','First Disbursement','Construction-Linked Disbursement','Final Disbursement','Regular Repayment'];
+const TABS=[['overview','Overview'],['loan','Loan Setup'],['schedule','Prepayments & Schedule'],['contractor','Contractor Ledger'],['budget','Budget & Funding'],['indirect','Indirect Costs'],['processing','Processing Stage'],['actions','Actions'],['emergency','Emergency Fund'],['family','Family'],['insurance','Insurance'],['strategy','Repay Faster']];
+const INDIRECT_CATEGORIES=["Temporary Home Rent","Temporary Utilities (Electricity / Water)","Plan Approval / Statutory Fees","Topography / Survey","Property Legal / POA / Rectification","Loan Processing / Legal / Valuation","MODT / Registration / Mortgage Charges","Moving / Shifting / Storage","Temporary Site Utilities","Property Tax / Utility Reconnection","Pre-EMI / Interest During Construction","Project Travel / Local Transport","Other Indirect"];
+const CONTRACTOR_CATEGORIES=['Civil / Construction','Architect / Design','Structural / Engineering','Electrical / Plumbing','Lift Installation','Solar / Battery System','Water Tank / Borewell','Interior / Finishing','Materials','Legal / Documentation','Government / Approval Fees','Other'];
+const INSURANCE_TYPES=['Health','Term Life','Personal Accident','Home & Structure','Other'];
+const INSURANCE_STRUCTURES=['Individual','Family Floater','Top-up'];
+const FUNDING_SOURCES=['Own Funds','Loan Disbursement','Family Contribution','Asset Sale','Other'];
+const ACTION_STATUS=['Open','Waiting','Done'];
+
+const defaults={"loan":{"lender":"","loanAccountNumber":"","interestType":"Floating","projectCost":0,"sanctioned":0,"disbursed":0,"outstanding":0,"rate":0,"tenureYears":15,"repaymentStart":"","emiDueDay":5,"constructionLinked":false,"preEmiUntil":"","extraMonthly":0,"annualLumpSum":0,"lumpSumMonth":12,"emiStepUpPercent":0,"targetDebtFree":"","notes":""},"prepayments":[],"contractor":[],"processing":{"stage":0,"remarks":"","updated":""},"emergency":{"monthlyEssentials":0,"targetMonths":6,"currentFund":0,"monthlyContribution":0,"sinkingFund":0},"family":[],"insurance":[],"strategy":{"cashBufferFloor":0,"prepayPercent":0,"emergencyPercent":0,"annualBonus":0,"bonusPrepayPercent":0},"meta":{"version":7},"budget":[],"indirectBudget":[],"indirectExpenses":[],"funding":[],"disbursements":[],"actions":[]};
+
+/* ---------- state ---------- */
+let data=deepCopy(defaults);
+let activeTab='overview';
+let justChangedStage=false;
+let saveTimer=null;
+let contractorFilter='';
+let ledgerEdit={type:null,index:null};
+let backupDirHandle=null;
+let backupSyncTimer=null;
+const BACKUP_FILENAME='home-loan-ledger-backup.json';
+const BACKUP_DB='home-loan-command-center-files';
+const BACKUP_STORE='handles';
+
+
+/* ---------- linked JSON backup ---------- */
+function backupApiSupported(){ return typeof window.showDirectoryPicker==='function' && typeof indexedDB!=='undefined'; }
+function openBackupDB(){
+  return new Promise((resolve,reject)=>{
+    const req=indexedDB.open(BACKUP_DB,1);
+    req.onupgradeneeded=()=>{ if(!req.result.objectStoreNames.contains(BACKUP_STORE)) req.result.createObjectStore(BACKUP_STORE); };
+    req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error);
+  });
+}
+async function saveBackupHandle(handle){
+  const db=await openBackupDB();
+  await new Promise((resolve,reject)=>{ const tx=db.transaction(BACKUP_STORE,'readwrite'); tx.objectStore(BACKUP_STORE).put(handle,'backupDir'); tx.oncomplete=resolve; tx.onerror=()=>reject(tx.error); });
+  db.close();
+}
+async function loadBackupHandle(){
+  try{
+    const db=await openBackupDB();
+    const handle=await new Promise((resolve,reject)=>{ const tx=db.transaction(BACKUP_STORE,'readonly'); const req=tx.objectStore(BACKUP_STORE).get('backupDir'); req.onsuccess=()=>resolve(req.result||null); req.onerror=()=>reject(req.error); });
+    db.close(); return handle;
+  }catch(e){ console.warn('Backup handle load failed',e); return null; }
+}
+async function clearBackupHandle(){
+  try{ const db=await openBackupDB(); await new Promise((resolve,reject)=>{ const tx=db.transaction(BACKUP_STORE,'readwrite'); tx.objectStore(BACKUP_STORE).delete('backupDir'); tx.oncomplete=resolve; tx.onerror=()=>reject(tx.error); }); db.close(); }catch(e){ console.warn(e); }
+}
+async function backupPermission(handle,request=false){
+  if(!handle) return false;
+  const opts={mode:'readwrite'};
+  try{
+    if((await handle.queryPermission(opts))==='granted') return true;
+    if(request && (await handle.requestPermission(opts))==='granted') return true;
+  }catch(e){ console.warn('Folder permission check failed',e); }
+  return false;
+}
+function setFolderBackupStatus(state,text){
+  const el=document.getElementById('folderBackupStatus'); if(!el) return;
+  el.className='backup-status '+(state||''); el.textContent=text;
+  const saveBtn=document.getElementById('saveJsonBtn'); if(saveBtn) saveBtn.disabled=!backupApiSupported();
+  const unlinkBtn=document.getElementById('unlinkBackupBtn'); if(unlinkBtn) unlinkBtn.disabled=!backupDirHandle;
+}
+async function linkBackupFolder(){
+  if(!backupApiSupported()){
+    alert('Automatic folder backup needs a Chromium browser with File System Access support, such as current Microsoft Edge or Chrome. You can still use Export Backup.');
+    return;
+  }
+  try{
+    const handle=await window.showDirectoryPicker({id:'home-loan-ledger-backup',mode:'readwrite'});
+    if(!(await backupPermission(handle,true))) throw new Error('Write permission was not granted.');
+    backupDirHandle=handle; await saveBackupHandle(handle);
+    await writeBackupFile(true);
+  }catch(e){
+    if(e && e.name==='AbortError') return;
+    console.warn('Link backup folder failed',e); setFolderBackupStatus('error','Link failed'); alert('The backup folder could not be linked. '+(e?.message||''));
+  }
+}
+async function writeBackupFile(manual=false){
+  if(!backupDirHandle){ if(manual) return linkBackupFolder(); return false; }
+  if(!(await backupPermission(backupDirHandle,manual))){ setFolderBackupStatus('warn','Permission needed'); return false; }
+  try{
+    setFolderBackupStatus('warn','Saving JSON…');
+    const fh=await backupDirHandle.getFileHandle(BACKUP_FILENAME,{create:true});
+    const writable=await fh.createWritable();
+    await writable.write(JSON.stringify(data,null,2));
+    await writable.close();
+    const stamp=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    setFolderBackupStatus('ok','Auto backup · '+stamp);
+    return true;
+  }catch(e){ console.warn('JSON folder backup failed',e); setFolderBackupStatus('error','Backup failed'); return false; }
+}
+function scheduleFolderBackup(){
+  if(!backupDirHandle) return;
+  clearTimeout(backupSyncTimer); backupSyncTimer=setTimeout(()=>writeBackupFile(false),700);
+}
+async function saveJsonNow(){
+  if(!backupApiSupported()) return exportBackup();
+  if(!backupDirHandle) return linkBackupFolder();
+  const ok=await writeBackupFile(true); if(ok) setFolderBackupStatus('ok','Saved now');
+}
+async function unlinkBackupFolder(){
+  if(!backupDirHandle){ setFolderBackupStatus('','Not linked'); return; }
+  if(!confirm('Unlink the automatic JSON backup folder? Your existing JSON file will remain in that folder.')) return;
+  backupDirHandle=null; clearTimeout(backupSyncTimer); await clearBackupHandle(); setFolderBackupStatus('','Not linked');
+}
+async function initFolderBackup(){
+  if(!backupApiSupported()){
+    setFolderBackupStatus('warn','Manual export only');
+    const b=document.getElementById('linkBackupBtn'); if(b) b.disabled=true;
+    return;
+  }
+  backupDirHandle=await loadBackupHandle();
+  if(!backupDirHandle){ setFolderBackupStatus('','Not linked'); return; }
+  if(await backupPermission(backupDirHandle,false)) setFolderBackupStatus('ok','Auto backup linked');
+  else setFolderBackupStatus('warn','Reconnect folder');
+}
+
+/* ---------- storage ---------- */
+function deepCopy(x){ return JSON.parse(JSON.stringify(x)); }
+function storageBackend(){
+  try{
+    if(typeof window!=='undefined' && window.storage && typeof window.storage.get==='function' && typeof window.storage.set==='function') return 'app';
+    if(typeof window!=='undefined' && window.localStorage){ const k='__ledger_test__'; localStorage.setItem(k,'1'); localStorage.removeItem(k); return 'local'; }
+  }catch(e){}
+  return 'none';
+}
+function storageAvailable(){ return storageBackend()!=='none'; }
+
+function migrateDataV5(obj){
+  const d=obj||{};
+  const priorVersion=Number(d?.meta?.version||0);
+  if(priorVersion<5){
+    (d.indirectExpenses||[]).forEach(x=>{
+      const desc=String(x.description||'').trim().toLowerCase();
+      const amt=Number(x.amount||0);
+      if(x.category==='Loan Processing / Legal / Valuation'){
+        if((desc==='power transfer' && amt===25000) || (desc.includes('survey number amendment') && amt===15000)){
+          x.category='Property Legal / POA / Rectification';
+        }
+      }
+    });
+  }
+  d.meta={...(d.meta||{}),version:7};
+  return d;
+}
+
+function mergeDefaults(x){
+  x=x||{};
+  const merged={
+    ...deepCopy(defaults), ...x,
+    loan:{...deepCopy(defaults.loan), ...(x.loan||{})},
+    processing:{...deepCopy(defaults.processing), ...(x.processing||{})},
+    emergency:{...deepCopy(defaults.emergency), ...(x.emergency||{})},
+    strategy:{...deepCopy(defaults.strategy), ...(x.strategy||{})},
+    budget:Array.isArray(x.budget)?x.budget:deepCopy(defaults.budget),
+    indirectBudget:Array.isArray(x.indirectBudget)?x.indirectBudget:deepCopy(defaults.indirectBudget),
+    indirectExpenses:(Array.isArray(x.indirectExpenses)?x.indirectExpenses:[]).map(r=>({frozen:false,...r})),
+    funding:Array.isArray(x.funding)?x.funding:deepCopy(defaults.funding),
+    disbursements:(Array.isArray(x.disbursements)?x.disbursements:[]).map(r=>({frozen:false,...r})),
+    actions:Array.isArray(x.actions)?x.actions:[],
+    contractor:(Array.isArray(x.contractor)?x.contractor:deepCopy(defaults.contractor)).map(r=>({frozen:false,...r})),
+    prepayments:(Array.isArray(x.prepayments)?x.prepayments:[]).map(r=>({frozen:false,...r})),
+    family:Array.isArray(x.family)?x.family:deepCopy(defaults.family),
+    insurance:Array.isArray(x.insurance)?x.insurance:deepCopy(defaults.insurance),
+    meta:{...deepCopy(defaults.meta), ...(x.meta||{})}
+  };
+  return migrateDataV5(merged);
+}
+async function waitForStorage(maxWaitMs){ return storageAvailable(); }
+async function loadData(){
+  const backend=storageBackend();
+  try{
+    if(backend==='app'){
+      const result=await window.storage.get(STORAGE_KEY);
+      if(result && result.value) return mergeDefaults(JSON.parse(result.value));
+    }
+    if(backend==='local'){
+      const raw=localStorage.getItem(STORAGE_KEY);
+      if(raw) return mergeDefaults(JSON.parse(raw));
+    }
+  }catch(e){ console.warn('Load failed',e); }
+  return deepCopy(defaults);
+}
+function save(){
+  data.meta={...(data.meta||{}),version:7,updated:new Date().toISOString()};
+  renderAll();
+  setSaveStatus('saving');
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(persist,300);
+}
+async function persist(){
+  const backend=storageBackend();
+  if(backend==='none'){ setSaveStatus('offline'); return; }
+  try{
+    if(backend==='app') await window.storage.set(STORAGE_KEY, JSON.stringify(data));
+    else localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+    setSaveStatus('saved');
+    scheduleFolderBackup();
+  }catch(e){ console.warn('Save failed',e); setSaveStatus('error'); }
+}
+function setSaveStatus(state){
+  const el=document.getElementById('saveStatus'); if(!el) return;
+  const map={saving:['Saving…','status-saving'],saved:['Saved','status-saved'],error:['Save failed — click to retry','status-error'],offline:['Not persistent','status-error']};
+  const [text,cls]=map[state]||map.saved;
+  const stamp=data?.meta?.updated ? new Date(data.meta.updated).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) : '';
+  el.textContent=state==='saved'&&stamp ? `Saved ${stamp}` : text;
+  el.className='save-status '+cls;
+  el.onclick = state==='error' ? persist : null;
+  el.style.cursor = state==='error' ? 'pointer' : 'default';
+  const mode=document.getElementById('storageMode');
+  if(mode) mode.textContent=storageBackend()==='app'?'App storage':storageBackend()==='local'?'Browser local storage':'Temporary session';
+}
+
+
+function indirectCategories(){
+  const values=[...INDIRECT_CATEGORIES,...(data.indirectBudget||[]).map(x=>x.category),...(data.indirectExpenses||[]).map(x=>x.category)]
+    .map(x=>String(x||'').trim()).filter(Boolean);
+  const seen=new Set(); return values.filter(x=>{ const k=x.toLowerCase(); if(seen.has(k)) return false; seen.add(k); return true; });
+}
+
+/* ---------- formatting helpers ---------- */
+function esc(s){ return String(s??'').replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
+function money(n){ n=Number(n||0); return '₹'+Math.round(n).toLocaleString('en-IN'); }
+function money2(n){ n=Number(n||0); return '₹'+n.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function moneyShort(n){
+  n=Number(n||0); const a=Math.abs(n);
+  const trim=x=>String(parseFloat(x.toFixed(2)));
+  if(a>=10000000) return '₹'+trim(n/10000000)+'Cr';
+  if(a>=100000) return '₹'+trim(n/100000)+'L';
+  if(a>=1000) return '₹'+trim(n/1000)+'k';
+  return '₹'+Math.round(n).toLocaleString('en-IN');
+}
+function dateFmt(s){ if(!s) return '—'; const d=new Date(s+'T00:00:00'); if(isNaN(d)) return '—'; return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }
+function addMonths(dateStr,n){ if(!dateStr) return ''; const d=new Date(dateStr+'T00:00:00'); d.setMonth(d.getMonth()+n); return d.toISOString().slice(0,10); }
+function monthKey(s){ return (s||'').slice(0,7); }
+function daysFromToday(dateStr){ if(!dateStr) return null; const d=new Date(dateStr+'T00:00:00'); const t=new Date(); t.setHours(0,0,0,0); return Math.round((d-t)/86400000); }
+
+/* ---------- loan math ---------- */
+function emi(P,annualRatePct,months){
+  P=Number(P); const r=Number(annualRatePct)/1200;
+  if(!P||!months) return 0;
+  if(!r) return P/months;
+  const f=Math.pow(1+r,months);
+  return P*r*f/(f-1);
+}
+function principalForSchedule(){ return Number(data.loan.outstanding)||Number(data.loan.disbursed)||Number(data.loan.sanctioned)||0; }
+function validLoan(){ return principalForSchedule()>0 && Number(data.loan.tenureYears)>0 && Number(data.loan.rate)>=0 && !!data.loan.repaymentStart; }
+function preEmiMonthly(){
+  const disbursed=Number(data.loan.disbursed||0), rate=Number(data.loan.rate||0);
+  if(!disbursed||!rate) return 0;
+  return disbursed*rate/1200;
+}
+function baselineSchedule(){
+  if(!validLoan()) return [];
+  const P0=principalForSchedule(), months=Math.round(Number(data.loan.tenureYears)*12);
+  const rate=Number(data.loan.rate), r=rate/1200, e=emi(P0,rate,months);
+  let P=P0, date=data.loan.repaymentStart, rows=[];
+  for(let i=1;i<=months && P>0.5;i++){
+    const interest=P*r, pay=Math.min(e,P+interest), principal=Math.max(0,pay-interest);
+    P=Math.max(0,P-principal);
+    rows.push({n:i,date,emi:pay,interest,principal,close:P});
+    date=addMonths(date,1);
+  }
+  return rows;
+}
+function buildSchedule(includePlanned){
+  if(!validLoan()) return [];
+  const P0=principalForSchedule(), months=Math.round(Number(data.loan.tenureYears)*12);
+  const rate=Number(data.loan.rate), r=rate/1200;
+  let currentEmi=emi(P0,rate,months);
+  const stepUp=includePlanned?Number(data.loan.emiStepUpPercent||0):0;
+  const prepMap={};
+  (data.prepayments||[]).forEach(p=>{ const k=monthKey(p.date); prepMap[k]=(prepMap[k]||0)+Number(p.amount||0); });
+  let P=P0, date=data.loan.repaymentStart, rows=[];
+  const cap=months+1200;
+  for(let i=1;i<=cap && P>0.5;i++){
+    if(stepUp>0 && i>1 && (i-1)%12===0){ currentEmi=currentEmi*(1+stepUp/100); }
+    const interest=P*r, pay=Math.min(currentEmi,P+interest), principal=Math.max(0,pay-interest);
+    P=Math.max(0,P-principal);
+    let pp=prepMap[monthKey(date)]||0;
+    if(includePlanned){
+      pp+=Number(data.loan.extraMonthly||0);
+      const lm=Number(data.loan.lumpSumMonth||12);
+      if(Number(data.loan.annualLumpSum||0)>0 && i>=lm && (i-lm)%12===0){ pp+=Number(data.loan.annualLumpSum||0); }
+    }
+    pp=Math.min(pp,P);
+    P-=pp;
+    rows.push({n:i,date,emi:pay,interest,principal,prepay:pp,close:P});
+    date=addMonths(date,1);
+  }
+  return rows;
+}
+function totalInterest(rows){ return rows.reduce((a,b)=>a+b.interest,0); }
+function totalPrepayments(){ return (data.prepayments||[]).reduce((a,b)=>a+Number(b.amount||0),0); }
+
+/* ---------- contractor ---------- */
+function contractorTotal(){ return (data.contractor||[]).reduce((a,b)=>a+Number(b.amount||0),0); }
+function ownFundsTotal(){ return (data.contractor||[]).filter(x=>x.source==='Own Funds').reduce((a,b)=>a+Number(b.amount||0),0); }
+function loanFundsPaid(){ return (data.contractor||[]).filter(x=>x.source==='Loan Disbursement').reduce((a,b)=>a+Number(b.amount||0),0); }
+function categoryBreakdown(){
+  const map={};
+  (data.contractor||[]).forEach(x=>{ map[x.category]=(map[x.category]||0)+Number(x.amount||0); });
+  return Object.entries(map).sort((a,b)=>b[1]-a[1]);
+}
+function sourceBreakdown(){
+  const map={}; (data.contractor||[]).forEach(x=>{ map[x.source]=(map[x.source]||0)+Number(x.amount||0); });
+  return map;
+}
+
+function contractorPaymentCount(){ return (data.contractor||[]).length; }
+function contractorAveragePayment(){ const c=contractorPaymentCount(); return c?contractorTotal()/c:0; }
+function contractorLastPayment(){
+  const rows=[...(data.contractor||[])].filter(x=>x.date).sort((a,b)=>a.date<b.date?1:-1);
+  return rows[0]||null;
+}
+function categoryPaymentCount(category){ return (data.contractor||[]).filter(x=>x.category===category).length; }
+function categoryPlanned(category){ return (data.budget||[]).filter(x=>x.category===category).reduce((a,b)=>a+Number(b.planned||0),0); }
+function indirectCategoryBreakdown(){
+  const map={};
+  (data.indirectExpenses||[]).forEach(x=>{ map[x.category]=(map[x.category]||0)+Number(x.amount||0); });
+  return Object.entries(map).sort((a,b)=>b[1]-a[1]);
+}
+function indirectOverPlanTotal(){
+  const cats=new Set([...(data.indirectBudget||[]).map(x=>x.category),...(data.indirectExpenses||[]).map(x=>x.category)]);
+  let over=0;
+  cats.forEach(c=>{ const p=(data.indirectBudget||[]).filter(x=>x.category===c).reduce((a,b)=>a+Number(b.planned||0),0), a=indirectBudgetActual(c); over+=Math.max(0,a-p); });
+  return over;
+}
+function indirectSourceBreakdown(){
+  const map={}; (data.indirectExpenses||[]).forEach(x=>{ map[x.source]=(map[x.source]||0)+Number(x.amount||0); });
+  return Object.entries(map).sort((a,b)=>b[1]-a[1]);
+}
+function sourceBreakdownHTML(map){
+  const rows=Array.isArray(map)?map:Object.entries(map||{}).sort((a,b)=>b[1]-a[1]);
+  if(!rows.length) return '<div class="mini">No payments recorded yet.</div>';
+  const total=rows.reduce((a,b)=>a+Number(b[1]||0),0);
+  return `<div class="source-stack">${rows.map(([name,amt])=>`<div class="source-row"><div><strong>${esc(name||'Unspecified')}</strong><div class="mini">${total?((Number(amt)/total)*100).toFixed(1):0}% of paid total</div></div><div class="num">${money(amt)}</div></div>`).join('')}</div>`;
+}
+function indirectCategoryCards(){
+  const rows=indirectCategoryBreakdown();
+  if(!rows.length) return '<div class="mini">No indirect payments recorded yet.</div>';
+  const total=indirectActualTotal();
+  return `<div class="category-stack">${rows.map(([cat,amt])=>{
+    const planned=(data.indirectBudget||[]).filter(x=>x.category===cat).reduce((a,b)=>a+Number(b.planned||0),0);
+    const variance=planned-amt;
+    const share=total?amt/total*100:0;
+    return `<div class="category-card"><div class="category-card-head"><div><div class="category-name">${esc(cat)}</div><div class="category-meta"><span>${share.toFixed(1)}% of indirect paid</span><span>Plan ${money(planned)}</span><span class="${variance<0?'amount-negative':'amount-positive'}">${variance<0?'Over':'Balance'} ${money(Math.abs(variance))}</span></div></div><div class="category-amount">${money(amt)}</div></div><div class="mini-bar"><span style="width:${Math.min(100,share)}%"></span></div></div>`;
+  }).join('')}</div>`;
+}
+
+function budgetPlannedTotal(){ return (data.budget||[]).reduce((a,b)=>a+Number(b.planned||0),0); }
+function budgetActual(category){ return (data.contractor||[]).filter(x=>x.category===category).reduce((a,b)=>a+Number(b.amount||0),0); }
+function indirectPlannedTotal(){ return (data.indirectBudget||[]).reduce((a,b)=>a+Number(b.planned||0),0); }
+function indirectActualTotal(){ return (data.indirectExpenses||[]).reduce((a,b)=>a+Number(b.amount||0),0); }
+function indirectBudgetActual(category){ return (data.indirectExpenses||[]).filter(x=>x.category===category).reduce((a,b)=>a+Number(b.amount||0),0); }
+function allInPlannedCost(){ return Number(data.loan.projectCost||0)+indirectPlannedTotal(); }
+function allInActualPaid(){ return contractorTotal()+indirectActualTotal(); }
+function fundingPlannedTotal(){ return (data.funding||[]).reduce((a,b)=>a+Number(b.planned||0),0); }
+function fundingUsed(source){ return [...(data.contractor||[]),...(data.indirectExpenses||[])].filter(x=>x.source===source).reduce((a,b)=>a+Number(b.amount||0),0); }
+function disbursementTotal(){ return (data.disbursements||[]).reduce((a,b)=>a+Number(b.amount||0),0); }
+function loanAvailable(){ return Math.max(0,Number(data.loan.sanctioned||0)-Math.max(Number(data.loan.disbursed||0),disbursementTotal())); }
+function nextOpenAction(){
+  const open=(data.actions||[]).filter(x=>x.status!=='Done').sort((a,b)=>(a.due||'9999')>(b.due||'9999')?1:-1);
+  return open[0]||null;
+}
+function monthsBetweenDates(start,end){
+  if(!start||!end) return null; const a=new Date(start+'T00:00:00'),b=new Date(end+'T00:00:00'); if(b<=a) return 0;
+  return Math.max(0,Math.ceil((b-a)/(365.2425/12*86400000)));
+}
+function payoffMonthsForExtra(extra){
+  if(!validLoan()) return null;
+  const P0=principalForSchedule(), rate=Number(data.loan.rate), r=rate/1200;
+  const baseMonths=Math.round(Number(data.loan.tenureYears)*12), baseEmi=emi(P0,rate,baseMonths);
+  let P=P0;
+  for(let i=1;i<=2400;i++){
+    const interest=P*r, pay=Math.min(baseEmi+Number(extra||0),P+interest);
+    const principal=Math.max(0,pay-interest); P=Math.max(0,P-principal);
+    if(P<=0.5) return i;
+  }
+  return null;
+}
+function requiredExtraForTarget(){
+  if(!validLoan()||!data.loan.targetDebtFree) return null;
+  const targetMonths=monthsBetweenDates(data.loan.repaymentStart,data.loan.targetDebtFree);
+  if(!targetMonths||targetMonths<=0) return null;
+  const base=payoffMonthsForExtra(0); if(base!==null && base<=targetMonths) return 0;
+  let lo=0,hi=Math.max(1000,principalForSchedule());
+  while((payoffMonthsForExtra(hi)||99999)>targetMonths && hi<principalForSchedule()*2) hi*=2;
+  for(let k=0;k<50;k++){ const mid=(lo+hi)/2; if((payoffMonthsForExtra(mid)||99999)<=targetMonths) hi=mid; else lo=mid; }
+  return Math.ceil(hi/100)*100;
+}
+
+
+/* ---------- emergency fund ---------- */
+function calcEmergency(){
+  const target=Number(data.emergency.monthlyEssentials||0)*Number(data.emergency.targetMonths||0);
+  const current=Number(data.emergency.currentFund||0);
+  const gap=Math.max(0,target-current);
+  const pct=target?Math.min(100,current/target*100):0;
+  const contrib=Number(data.emergency.monthlyContribution||0);
+  const monthsToTarget=gap>0 && contrib>0 ? Math.ceil(gap/contrib) : null;
+  return {target,current,gap,pct,monthsToTarget};
+}
+
+/* ---------- insurance ---------- */
+function coverageByType(type){ return (data.insurance||[]).filter(x=>x.type===type).reduce((a,b)=>a+Number(b.sumInsured||0),0); }
+function renewalUrgency(dateStr){
+  const d=daysFromToday(dateStr);
+  if(d===null) return null;
+  if(d<0) return 'expired';
+  if(d<=60) return 'soon';
+  return null;
+}
+
+/* ---------- form helpers ---------- */
+function setPath(path,value,type){
+  let ref=data; const parts=path.split('.');
+  for(let i=0;i<parts.length-1;i++) ref=ref[parts[i]];
+  ref[parts.at(-1)] = type==='number' ? Number(value||0) : value;
+  save();
+}
+function setChecked(path,checked){
+  let ref=data; const parts=path.split('.');
+  for(let i=0;i<parts.length-1;i++) ref=ref[parts[i]];
+  ref[parts.at(-1)]=checked;
+  save();
+}
+function fld(label,path,value,type,attrs){
+  attrs=attrs||'';
+  return `<div class="field"><label>${esc(label)}</label><input type="${type||'text'}" value="${esc(value??'')}" ${attrs} onchange="setPath('${path}',this.value,'${type==='number'?'number':'text'}')"></div>`;
+}
+function sel(label,path,value,opts){
+  return `<div class="field"><label>${esc(label)}</label><select onchange="setPath('${path}',this.value)">${opts.map(o=>`<option ${o===value?'selected':''}>${esc(o)}</option>`).join('')}</select></div>`;
+}
+function chk(label,path,value){
+  return `<div class="field"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px"><input type="checkbox" style="width:auto" ${value?'checked':''} onchange="setChecked('${path}',this.checked)"> ${esc(label)}</label></div>`;
+}
+function stampBadge(text,variant,pop){
+  const cls=['stamp',variant,pop?'pop':''].filter(Boolean).join(' ');
+  return `<span class="${cls}">${esc(text)}</span>`;
+}
+
+/* ---------- tabs / shell ---------- */
+function renderCover(){
+  const el=document.getElementById('coverEyebrow'); if(!el) return;
+  const bits=[data.loan.lender||null, data.loan.loanAccountNumber?('A/C '+data.loan.loanAccountNumber):null].filter(Boolean);
+  el.textContent = bits.length ? bits.join(' · ') : 'My Local Plan';
+}
+function renderTabs(){
+  const el=document.getElementById('tabs');
+  el.innerHTML=`
+    <div class="nav-row">
+      <div class="nav-label">Navigate Command Center</div>
+      <label class="sr-only" for="tabJump">Jump to section</label>
+      <select id="tabJump" class="tab-jump" onchange="showTab(this.value,true)">
+        ${TABS.map(([id,label])=>`<option value="${id}" ${id===activeTab?'selected':''}>${esc(label)}</option>`).join('')}
+      </select>
+    </div>
+    <div class="tab-grid" role="tablist" aria-label="Home loan command center sections">
+      ${TABS.map(([id,label])=>`<button type="button" class="tab ${id===activeTab?'active':''}" role="tab" aria-selected="${id===activeTab?'true':'false'}" aria-controls="${id}" data-tab="${id}" onclick="showTab('${id}',true)" onkeydown="tabKey(event,'${id}')">${esc(label)}</button>`).join('')}
+    </div>`;
+}
+function tabKey(event,id){
+  if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(event.key)) return;
+  event.preventDefault();
+  const ids=TABS.map(x=>x[0]); let i=ids.indexOf(id);
+  if(event.key==='Home') i=0;
+  else if(event.key==='End') i=ids.length-1;
+  else if(event.key==='ArrowLeft'||event.key==='ArrowUp') i=(i-1+ids.length)%ids.length;
+  else i=(i+1)%ids.length;
+  showTab(ids[i],true);
+  requestAnimationFrame(()=>document.querySelector(`.tab[data-tab="${ids[i]}"]`)?.focus());
+}
+function showTab(id,scrollToSection=false){
+  activeTab=id;
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  const sec=document.getElementById(id); if(sec) sec.classList.add('active');
+  document.querySelectorAll('.tab').forEach(b=>{ const on=b.dataset.tab===id; b.classList.toggle('active',on); b.setAttribute('aria-selected',on?'true':'false'); });
+  const jump=document.getElementById('tabJump'); if(jump) jump.value=id;
+  if(scrollToSection && sec) requestAnimationFrame(()=>sec.scrollIntoView({behavior:'smooth',block:'start'}));
+}
+function renderAll(){
+  renderCover();
+  renderTabs();
+  renderOverview();
+  renderLoanTab();
+  renderScheduleTab();
+  renderContractorTab();
+  renderBudgetTab();
+  renderIndirectTab();
+  renderProcessingTab();
+  renderActionsTab();
+  renderEmergencyTab();
+  renderFamilyTab();
+  renderInsuranceTab();
+  renderStrategyTab();
+  showTab(activeTab);
+  justChangedStage=false;
+}
+
+/* ---------- chart ---------- */
+const COLORS={cloth:'#1E3B31',rule:'#B7AE8F',ink:'#221D15',inkSoft:'#6B6152'};
+function renderBalanceChart(base,plan,principal){
+  if(!base.length) return `<div class="helper warn">Add interest rate, tenure and a Full-EMI start date in Loan Setup to generate this chart.</div>`;
+  const w=640,h=250,padL=52,padB=26,padT=12,padR=12;
+  const innerW=w-padL-padR, innerH=h-padT-padB;
+  const maxLen=Math.max(base.length,plan.length), maxVal=principal||1;
+  function pt(rows,i){
+    const x=padL+innerW*(i/((maxLen-1)||1));
+    const y=padT+innerH*(1-((rows[i]&&rows[i].close)||0)/maxVal);
+    return [x,y];
+  }
+  function path(rows){ return rows.map((_,i)=>pt(rows,i)).map(([x,y],i)=>`${i?'L':'M'}${x.toFixed(1)},${y.toFixed(1)}`).join(' '); }
+  let grid='';
+  for(let i=0;i<=4;i++){
+    const y=padT+innerH*i/4;
+    grid+=`<line x1="${padL}" y1="${y}" x2="${w-padR}" y2="${y}" stroke="${COLORS.rule}" stroke-width="1"/>`;
+    grid+=`<text x="${padL-7}" y="${y+3}" font-size="9" text-anchor="end" fill="${COLORS.inkSoft}" font-family="ui-monospace,Menlo,monospace">${moneyShort(maxVal*(1-i/4))}</text>`;
+  }
+  const longer=base.length>=plan.length?base:plan;
+  let ticks='';
+  for(let i=0;i<maxLen;i+=12){
+    const [x]=pt(longer,Math.min(i,longer.length-1));
+    ticks+=`<text x="${x}" y="${h-padB+16}" font-size="9" text-anchor="middle" fill="${COLORS.inkSoft}" font-family="ui-monospace,Menlo,monospace">Y${Math.round(i/12)}</text>`;
+  }
+  return `<svg class="chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="Outstanding balance over time, baseline versus prepayment plan">
+    ${grid}
+    <path d="${path(base)}" fill="none" stroke="${COLORS.rule}" stroke-width="2.5" stroke-dasharray="4 3"/>
+    <path d="${path(plan)}" fill="none" stroke="${COLORS.cloth}" stroke-width="2.75"/>
+    ${ticks}
+    <g font-family="-apple-system,sans-serif" font-size="11">
+      <rect x="${w-192}" y="6" width="10" height="10" fill="${COLORS.rule}"/><text x="${w-178}" y="15" fill="${COLORS.inkSoft}">Baseline</text>
+      <rect x="${w-100}" y="6" width="10" height="10" fill="${COLORS.cloth}"/><text x="${w-86}" y="15" fill="${COLORS.ink}">With plan</text>
+    </g>
+  </svg>`;
+}
+
+/* ---------- OVERVIEW ---------- */
+function renderOverview(){
+  const plan=buildSchedule(true), base=baselineSchedule();
+  const principal=principalForSchedule();
+  const months=Math.round(Number(data.loan.tenureYears)*12);
+  const e=validLoan()?emi(principal,Number(data.loan.rate),months):0;
+  const interestSaved=base.length&&plan.length?Math.max(0,totalInterest(base)-totalInterest(plan)):0;
+  const monthsSaved=base.length&&plan.length?Math.max(0,base.length-plan.length):0;
+  const em=calcEmergency();
+  const paid=contractorTotal();
+  const indirectPaid=indirectActualTotal();
+  const allInPaid=allInActualPaid();
+  const indirectPlanned=indirectPlannedTotal();
+  const allInPlanned=allInPlannedCost();
+  const remain=Math.max(0,Number(data.loan.projectCost||0)-paid);
+  const stageIdx=Number(data.processing.stage||0);
+  const stageLabel=STAGES[stageIdx]||STAGES[0];
+  const preEmi=preEmiMonthly();
+  const debtFreeDate=plan.at(-1)?.date;
+
+  document.getElementById('overview').innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin:14px 0">
+      <div class="mini">Today: ${dateFmt(new Date().toISOString().slice(0,10))}</div>
+      ${stampBadge(stageLabel,'cloth')}
+    </div>
+    <div class="grid kpi">
+      <div class="sheet kpi-card"><div class="kpi-label">Sanctioned</div><div class="kpi-value">${moneyShort(data.loan.sanctioned)}</div><div class="kpi-foot">${esc(data.loan.lender||'Lender not set')}</div></div>
+      <div class="sheet kpi-card"><div class="kpi-label">EMI (Full)</div><div class="kpi-value">${e?money(e):'—'}</div><div class="kpi-foot">${validLoan()?'on '+moneyShort(principal):'add rate, tenure, start date'}</div></div>
+      <div class="sheet kpi-card"><div class="kpi-label">Direct Project Paid</div><div class="kpi-value">${moneyShort(paid)}</div><div class="kpi-foot">${moneyShort(remain)} left of ${moneyShort(data.loan.projectCost)}</div></div>
+      <div class="sheet kpi-card"><div class="kpi-label">Indirect Paid</div><div class="kpi-value">${moneyShort(indirectPaid)}</div><div class="kpi-foot">${moneyShort(Math.max(0,indirectPlanned-indirectPaid))} left of indirect plan</div></div>
+      <div class="sheet kpi-card"><div class="kpi-label">Prepaid</div><div class="kpi-value">${moneyShort(totalPrepayments())}</div><div class="kpi-foot">+${money(data.loan.extraMonthly)}/mo planned</div></div>
+      <div class="sheet kpi-card"><div class="kpi-label">Interest Saved</div><div class="kpi-value">${base.length?moneyShort(interestSaved):'—'}</div><div class="kpi-foot">${monthsSaved?monthsSaved+' fewer months':'set up schedule to see this'}</div></div>
+      <div class="sheet kpi-card"><div class="kpi-label">Emergency Fund</div><div class="kpi-value">${moneyShort(em.current)}</div><div class="kpi-foot">${em.pct.toFixed(0)}% of ${moneyShort(em.target)}</div></div>
+    </div>
+    ${data.loan.constructionLinked?`<div class="notice">Construction-linked loan: while disbursement is staged you typically pay <strong>pre-EMI interest only</strong>${data.loan.disbursed?' — about '+money2(preEmi)+'/month on '+money(data.loan.disbursed)+' disbursed so far':' (nothing disbursed yet)'}. Full EMI begins from the Full-EMI Start Date set in Loan Setup.</div>`:''}
+    <div class="grid two">
+      <div class="sheet">
+        <h3>Debt-Free Projection</h3>
+        <div class="sub">Baseline EMI vs. your current prepayment plan</div>
+        ${renderBalanceChart(base,plan,principal)}
+        ${debtFreeDate?`<div class="mini" style="margin-top:8px">Projected debt-free: <strong>${dateFmt(debtFreeDate)}</strong> (${plan.length} payments)</div>`:''}
+      </div>
+      <div class="sheet">
+        <h3>Current Focus</h3>
+        <div class="playbook">
+          <div class="play-item"><div><strong>Liquidity:</strong> emergency gap ${money(em.gap)}<div class="mini">Keep this funded before pushing every rupee into prepayment.</div></div></div>
+          <div class="play-item"><div><strong>Project cash:</strong> ${money(allInPaid)} all-in paid so far<div class="mini">Direct ${money(paid)} · Indirect ${money(indirectPaid)} · Own-funded direct ${money(ownFundsTotal())}</div></div></div>
+          <div class="play-item"><div><strong>Acceleration active:</strong> ${money(data.loan.extraMonthly)}/mo${Number(data.loan.emiStepUpPercent)?' + '+data.loan.emiStepUpPercent+'% step-up/yr':''}${Number(data.loan.annualLumpSum)?' + '+money(data.loan.annualLumpSum)+'/yr':''}<div class="mini">Tune this in Repay Faster.</div></div></div>
+          <div class="play-item"><div><strong>${data.processing.remarks?'Next step:':'Stage remarks:'}</strong> ${esc(data.processing.remarks||'Add pending actions in Processing Stage.')}</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="metric-strip">
+      <div class="metric-mini"><div class="kpi-label">Direct Budget Allocated</div><div class="kpi-value">${moneyShort(budgetPlannedTotal())}</div><div class="mini">${moneyShort(Math.max(0,Number(data.loan.projectCost||0)-budgetPlannedTotal()))} direct cost unallocated</div></div>
+      <div class="metric-mini"><div class="kpi-label">All-in Planned Cost</div><div class="kpi-value">${moneyShort(allInPlanned)}</div><div class="mini">Direct ${moneyShort(data.loan.projectCost)} + indirect ${moneyShort(indirectPlanned)}</div></div>
+      <div class="metric-mini"><div class="kpi-label">Loan Available</div><div class="kpi-value">${moneyShort(loanAvailable())}</div><div class="mini">of ${moneyShort(data.loan.sanctioned)} sanctioned</div></div>
+      <div class="metric-mini"><div class="kpi-label">Funding Planned</div><div class="kpi-value">${moneyShort(fundingPlannedTotal())}</div><div class="mini">${moneyShort(Math.max(0,allInPlanned-fundingPlannedTotal()))} all-in funding gap</div></div>
+      <div class="metric-mini"><div class="kpi-label">Next Action</div><div class="kpi-value" style="font-size:14px">${nextOpenAction()?esc(nextOpenAction().title):'—'}</div><div class="mini">${nextOpenAction()?.due?dateFmt(nextOpenAction().due):'No open action with due date'}</div></div>
+      <div class="metric-mini"><div class="kpi-label">Frozen Transactions</div><div class="kpi-value">${frozenCount(data.contractor)+frozenCount(data.indirectExpenses)+frozenCount(data.prepayments)+frozenCount(data.disbursements)}</div><div class="mini">Verified records protected from accidental changes</div></div>
+    </div>`;
+}
+
+/* ---------- LOAN SETUP ---------- */
+function renderLoanTab(){
+  document.getElementById('loan').innerHTML=`
+  <div class="grid two">
+    <div class="sheet">
+      <h2>Loan Setup</h2>
+      <div class="sub">Update this whenever the bank confirms new terms.</div>
+      <div class="row">${fld('Lender / Bank','loan.lender',data.loan.lender)}${fld('Loan Account Number','loan.loanAccountNumber',data.loan.loanAccountNumber)}</div>
+      <div class="row">${sel('Interest Type','loan.interestType',data.loan.interestType,['Floating','Fixed'])}${fld('Interest Rate % p.a.','loan.rate',data.loan.rate,'number','step="0.01" placeholder="e.g. 8.25"')}</div>
+      <div class="row">${fld('Direct Project Cost (₹)','loan.projectCost',data.loan.projectCost,'number')}${fld('Sanctioned Amount (₹)','loan.sanctioned',data.loan.sanctioned,'number')}</div>
+      <div class="row">${fld('Disbursed So Far (₹)','loan.disbursed',data.loan.disbursed,'number')}${fld('Outstanding Override (₹)','loan.outstanding',data.loan.outstanding,'number')}</div>
+      <div class="mini">Disbursement ledger total: <strong>${money(disbursementTotal())}</strong> · Available sanctioned amount: <strong>${money(loanAvailable())}</strong></div>
+      <div class="row">${fld('Tenure (Years)','loan.tenureYears',data.loan.tenureYears,'number','step="0.5" placeholder="e.g. 20"')}${fld('EMI Due Day','loan.emiDueDay',data.loan.emiDueDay,'number','min="1" max="28"')}</div>
+      <div class="row">${fld('Full-EMI Start Date','loan.repaymentStart',data.loan.repaymentStart,'date')}${fld('Target Debt-Free Date','loan.targetDebtFree',data.loan.targetDebtFree,'date')}</div>
+      <hr>
+      ${chk('This is a construction-linked loan (staged disbursement, pre-EMI interest phase)','loan.constructionLinked',data.loan.constructionLinked)}
+      ${data.loan.constructionLinked?`<div class="row">${fld('Expected Full-EMI Transition Date','loan.preEmiUntil',data.loan.preEmiUntil,'date')}<div class="field"><label>Pre-EMI Interest (auto)</label><input value="${preEmiMonthly()?money2(preEmiMonthly())+'/mo':'—'}" disabled></div></div>`:''}
+      <div class="field"><label>Notes</label><textarea onchange="setPath('loan.notes',this.value)">${esc(data.loan.notes)}</textarea></div>
+    </div>
+    <div class="sheet"><h2>Repayment Snapshot</h2>${loanSnapshot()}</div>
+  </div>`;
+}
+function loanSnapshot(){
+  const plan=buildSchedule(true), base=baselineSchedule();
+  if(!validLoan()) return `<div class="helper warn">Enter interest rate, tenure and the Full-EMI start date. The schedule will then calculate EMI, interest and your projected debt-free date.</div>`;
+  const e=emi(principalForSchedule(),Number(data.loan.rate),Math.round(Number(data.loan.tenureYears)*12));
+  return `<div class="grid kpi">
+    <div><div class="kpi-label">EMI</div><div class="kpi-value">${money2(e)}</div></div>
+    <div><div class="kpi-label">Baseline Interest</div><div class="kpi-value">${moneyShort(totalInterest(base))}</div></div>
+    <div><div class="kpi-label">Planned Interest</div><div class="kpi-value">${moneyShort(totalInterest(plan))}</div></div>
+    <div><div class="kpi-label">Debt-Free (Plan)</div><div class="kpi-value" style="font-size:17px">${dateFmt(plan.at(-1)?.date)}</div></div>
+  </div>
+  <hr>
+  <div class="helper ok">Your current plan may save <strong>${money(Math.max(0,totalInterest(base)-totalInterest(plan)))}</strong> in interest and <strong>${Math.max(0,base.length-plan.length)} months</strong>, versus the plain EMI with no extra prepayment.</div>
+  <div class="helper" style="margin-top:8px">Check your lender agreement for prepayment fees, timing, and how extra payments are applied before relying on this plan.</div>
+  <div class="inline-actions"><button onclick="showTab('schedule')">Open Full Schedule</button></div>`;
+}
+
+/* ---------- PREPAYMENTS & SCHEDULE ---------- */
+function renderScheduleTab(){
+  const rows=buildSchedule(true);
+  document.getElementById('schedule').innerHTML=`
+  <div class="grid two">
+    <div class="sheet">
+      <h2>Record a Prepayment</h2>
+      <div class="row"><div class="field"><label>Date</label><input id="prepDate" type="date"></div><div class="field"><label>Amount (₹)</label><input id="prepAmount" type="number"></div></div>
+      <div class="field"><label>Source</label><select id="prepSource"><option>Savings</option><option>Bonus</option><option>Asset Sale</option><option>Family Contribution</option><option>Other</option></select></div>
+      <div class="field"><label>Note</label><input id="prepNote" placeholder="Optional"></div>
+      <button onclick="addPrepayment()">Add Prepayment</button>
+      <hr>
+      <h3>Recorded Prepayments</h3>
+      ${prepaymentList()}
+    </div>
+    <div class="sheet">
+      <h2>Amortization Schedule</h2>
+      <div class="sub">Includes recorded prepayments plus your planned extra monthly / annual amounts and any EMI step-up.</div>
+      <div class="inline-actions"><button class="secondary small-btn" onclick="downloadScheduleCSV()">Download CSV</button></div>
+      <div class="table-wrap" style="margin-top:10px">${scheduleTable(rows)}</div>
+    </div>
+  </div>`;
+}
+function addPrepayment(){
+  const date=document.getElementById('prepDate')?.value;
+  const amount=Number(document.getElementById('prepAmount')?.value||0);
+  const source=document.getElementById('prepSource')?.value||'';
+  const note=document.getElementById('prepNote')?.value||'';
+  if(!date||!amount){ alert('Enter a prepayment date and amount.'); return; }
+  data.prepayments.push({date,amount,source,note,frozen:false,createdAt:new Date().toISOString()});
+  save();
+}
+function prepaymentList(){
+  if(!data.prepayments.length) return '<div class="mini">No prepayments recorded yet.</div>';
+  const rows=[...data.prepayments].sort((a,b)=>a.date<b.date?1:-1);
+  return `<div class="ledger-control-note"><strong>Finalise bank-confirmed entries:</strong> Freeze a prepayment after it has reflected correctly against the loan.</div><div class="table-wrap"><table><thead><tr><th>Date</th><th>Amount</th><th>Source</th><th>Note</th><th>Status</th><th class="action-col">Actions</th></tr></thead><tbody>
+  ${rows.map(p=>{ const i=data.prepayments.indexOf(p), edit=isEditing('prepayment',i);
+    if(edit) return `<tr class="row-editing"><td>${editValue('ppeDate',p.date,'date')}</td><td>${editValue('ppeAmount',p.amount,'number','min="0"')}</td><td><select id="ppeSource" class="ledger-edit">${optionList(['Savings','Bonus','Asset Sale','Family Contribution','Other'],p.source)}</select></td><td>${editValue('ppeNote',p.note)}</td><td>${rowStatusHTML(p)}</td><td class="action-col"><div class="row-actions"><button onclick="savePrepaymentEdit(${i})">Save</button><button class="cancel-btn small-btn" onclick="cancelLedgerEdit('prepayment')">Cancel</button></div></td></tr>`;
+    return `<tr class="${p.frozen?'row-locked':''}"><td>${dateFmt(p.date)}</td><td class="num">${money(p.amount)}</td><td>${esc(p.source||'—')}</td><td>${esc(p.note||'')}</td><td>${rowStatusHTML(p)}</td><td class="action-col">${rowActionHTML('prepayment',i,p)}</td></tr>`;
+  }).join('')}
+  </tbody></table></div>`;
+}
+function savePrepaymentEdit(i){
+  const row=data.prepayments[i]; if(!row||row.frozen) return;
+  const next={date:ppeDate.value,amount:Number(ppeAmount.value||0),source:ppeSource.value,note:ppeNote.value};
+  if(!next.date||!next.amount){ alert('Enter a prepayment date and amount.'); return; }
+  Object.assign(row,next,{updatedAt:new Date().toISOString()}); ledgerEdit={type:null,index:null}; save();
+}
+function scheduleTable(rows){
+  if(!rows.length) return '<div class="helper warn">Complete Loan Setup to generate the schedule.</div>';
+  return `<table><thead><tr><th>#</th><th>Due</th><th>EMI</th><th>Interest</th><th>Principal</th><th>Prepay</th><th>Closing</th></tr></thead><tbody>
+  ${rows.map(r=>`<tr><td>${r.n}</td><td>${dateFmt(r.date)}</td><td class="num">${money2(r.emi)}</td><td class="num">${money2(r.interest)}</td><td class="num">${money2(r.principal)}</td><td class="num">${r.prepay?money2(r.prepay):'—'}</td><td class="num">${money2(r.close)}</td></tr>`).join('')}
+  </tbody></table>`;
+}
+
+
+/* ---------- transaction editing / finalisation ---------- */
+function ledgerArray(type){
+  return type==='contractor'?data.contractor:type==='indirect'?data.indirectExpenses:type==='prepayment'?data.prepayments:type==='disbursement'?data.disbursements:null;
+}
+function ledgerLabel(type){ return ({contractor:'contractor payment',indirect:'indirect expense',prepayment:'prepayment',disbursement:'loan disbursement'})[type]||'transaction'; }
+function ledgerRender(type){ if(type==='contractor') renderContractorTab(); else if(type==='indirect') renderIndirectTab(); else if(type==='prepayment') renderScheduleTab(); else if(type==='disbursement') renderBudgetTab(); }
+function isEditing(type,index){ return ledgerEdit.type===type && ledgerEdit.index===index; }
+function startLedgerEdit(type,index){
+  const row=ledgerArray(type)?.[index]; if(!row) return;
+  if(row.frozen){ alert('This line is frozen. Unlock it first if a correction is required.'); return; }
+  ledgerEdit={type,index}; ledgerRender(type);
+}
+function cancelLedgerEdit(type){ ledgerEdit={type:null,index:null}; ledgerRender(type); }
+function freezeLedgerRow(type,index){
+  const row=ledgerArray(type)?.[index]; if(!row||row.frozen) return;
+  if(!confirm(`Freeze this ${ledgerLabel(type)}? Editing and deletion will be blocked until you explicitly unlock it.`)) return;
+  row.frozen=true; row.frozenAt=new Date().toISOString(); row.updatedAt=row.updatedAt||row.frozenAt;
+  ledgerEdit={type:null,index:null}; if(type==='disbursement') syncDisbursement(); save();
+}
+function unlockLedgerRow(type,index){
+  const row=ledgerArray(type)?.[index]; if(!row||!row.frozen) return;
+  if(!confirm(`Unlock this frozen ${ledgerLabel(type)} for correction? This removes its finalised protection.`)) return;
+  row.frozen=false; row.unlockedAt=new Date().toISOString(); save();
+}
+function deleteLedgerRow(type,index){
+  const arr=ledgerArray(type), row=arr?.[index]; if(!row) return;
+  if(row.frozen){ alert('Frozen lines cannot be deleted. Unlock the line first.'); return; }
+  if(!confirm(`Delete this ${ledgerLabel(type)}? This cannot be undone.`)) return;
+  arr.splice(index,1); ledgerEdit={type:null,index:null}; if(type==='disbursement') syncDisbursement(); save();
+}
+function rowStatusHTML(row){ return row?.frozen?`<span class="lock-badge" title="Frozen ${row.frozenAt?new Date(row.frozenAt).toLocaleString('en-IN'):''}">Frozen</span>`:'<span class="open-badge">Open</span>'; }
+function rowActionHTML(type,index,row){
+  if(row?.frozen) return `<div class="row-actions"><button class="unlock-btn small-btn" onclick="unlockLedgerRow('${type}',${index})">Unlock</button></div>`;
+  return `<div class="row-actions"><button class="edit-btn small-btn" onclick="startLedgerEdit('${type}',${index})">Edit</button><button class="freeze-btn small-btn" onclick="freezeLedgerRow('${type}',${index})">Freeze</button><button class="danger small-btn" onclick="deleteLedgerRow('${type}',${index})">Delete</button></div>`;
+}
+function frozenCount(arr){ return (arr||[]).filter(x=>x.frozen).length; }
+function optionList(values,current){ return [...new Set([...(values||[]),current].filter(Boolean))].map(v=>`<option ${v===current?'selected':''}>${esc(v)}</option>`).join(''); }
+function editValue(id,value,type='text',extra=''){ return `<input id="${id}" class="ledger-edit" type="${type}" value="${esc(value??'')}" ${extra}>`; }
+
+/* ---------- CONTRACTOR LEDGER ---------- */
+function renderContractorTab(){
+  const last=contractorLastPayment(), paid=contractorTotal(), project=Number(data.loan.projectCost||0);
+  const sourceMap=sourceBreakdown();
+  document.getElementById('contractor').innerHTML=`
+  <div class="grid two">
+    <div class="sheet">
+      <h2>Record a Payment</h2>
+      <div class="row"><div class="field"><label>Date</label><input id="cpDate" type="date"></div><div class="field"><label>Payee</label><input id="cpPayee" placeholder="Contractor / Architect / Vendor"></div></div>
+      <div class="row"><div class="field"><label>Category</label><select id="cpCategory">${CONTRACTOR_CATEGORIES.map(c=>`<option>${esc(c)}</option>`).join('')}</select></div><div class="field"><label>Amount (₹)</label><input id="cpAmount" type="number"></div></div>
+      <div class="row"><div class="field"><label>Funding Source</label><select id="cpSource"><option>Own Funds</option><option>Loan Disbursement</option><option>Family Contribution</option><option>Asset Sale</option><option>Other</option></select></div><div class="field"><label>Mode</label><select id="cpMode"><option>Bank Transfer</option><option>Cash</option><option>UPI</option><option>Cheque</option><option>Other</option></select></div></div>
+      <div class="field"><label>Reference / Note</label><input id="cpNote" placeholder="Invoice, milestone, UTR, etc."></div>
+      <button onclick="addContractorPayment()">Add Payment</button>
+    </div>
+    <div class="sheet">
+      <h2>Project Cost Control</h2>
+      <div class="grid kpi">
+        <div><div class="kpi-label">Direct Project Cost</div><div class="kpi-value">${moneyShort(project)}</div></div>
+        <div><div class="kpi-label">Paid</div><div class="kpi-value">${moneyShort(paid)}</div></div>
+        <div><div class="kpi-label">Remaining</div><div class="kpi-value">${moneyShort(Math.max(0,project-paid))}</div></div>
+      </div>
+      <div class="progress" style="margin-top:10px"><div class="bar" style="width:${project?Math.min(100,paid/project*100):0}%"></div></div>
+      <div class="mini" style="margin-top:7px">${project?((paid/project)*100).toFixed(1):0}% paid · Own funds ${money(ownFundsTotal())} · Loan-funded ${money(loanFundsPaid())}</div>
+      <div class="metric-strip">
+        <div class="metric-mini"><div class="kpi-label">Payments</div><div class="kpi-value">${contractorPaymentCount()}</div></div>
+        <div class="metric-mini"><div class="kpi-label">Average Payment</div><div class="kpi-value">${moneyShort(contractorAveragePayment())}</div></div>
+        <div class="metric-mini"><div class="kpi-label">Latest Payment</div><div class="kpi-value">${last?moneyShort(last.amount):'—'}</div><div class="mini">${last?dateFmt(last.date)+' · '+esc(last.payee):'No payments'}</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="sheet" style="margin-top:14px">
+    <div class="split-head"><div><h2>Spend Analysis</h2><div class="sub">Responsive category and funding breakdown. This section no longer uses the wide table that overflowed the contractor card.</div></div><button class="secondary small-btn" onclick="downloadContractorCSV()">Download CSV</button></div>
+    <div class="analysis-grid">
+      <div><h3>By Category</h3>${categoryTable()}</div>
+      <div><h3>By Funding Source</h3>${sourceBreakdownHTML(sourceMap)}</div>
+    </div>
+  </div>
+  <div class="sheet" style="margin-top:14px">
+    <div class="ledger-head">
+      <div><h2>Payment Ledger</h2><div class="sub">Edit open lines, then Freeze a verified payment to protect it from accidental changes.</div></div>
+      <div class="ledger-stats"><span class="stat-chip"><strong>${contractorPaymentCount()}</strong> records</span><span class="stat-chip final-count"><strong>${frozenCount(data.contractor)}</strong> frozen</span><span class="stat-chip">Total <strong>${money(paid)}</strong></span></div>
+    </div>
+    <div class="table-tools"><input placeholder="Search payee, category, source or reference" value="${esc(contractorFilter)}" oninput="contractorFilter=this.value;renderContractorTab()"><button class="secondary small-btn" onclick="downloadContractorCSV()">Download CSV</button></div><div class="ledger-control-note"><strong>Workflow:</strong> Edit → Save → Freeze. Frozen lines cannot be edited or deleted unless you explicitly Unlock them.</div>
+    <div class="table-wrap" style="margin-top:10px">${contractorTable()}</div>
+  </div>`;
+}
+function addContractorPayment(){
+  const row={date:cpDate.value,payee:cpPayee.value,category:cpCategory.value,amount:Number(cpAmount.value||0),source:cpSource.value,mode:cpMode.value,note:cpNote.value,frozen:false,createdAt:new Date().toISOString()};
+  if(!row.date||!row.payee||!row.amount){ alert('Enter date, payee and amount.'); return; }
+  data.contractor.push(row);
+  save();
+}
+function categoryTable(){
+  const rows=categoryBreakdown();
+  if(!rows.length) return '<div class="mini">No payments recorded yet.</div>';
+  const total=contractorTotal();
+  return `<div class="category-stack">${rows.map(([cat,amt])=>{
+    const share=total?amt/total*100:0, count=categoryPaymentCount(cat), planned=categoryPlanned(cat);
+    const budgetText=planned?`Budget ${money(planned)} · ${amt>planned?'<span class="amount-negative">over '+money(amt-planned)+'</span>':'balance '+money(planned-amt)}`:'No direct budget allocated';
+    return `<div class="category-card">
+      <div class="category-card-head">
+        <div><div class="category-name">${esc(cat)}</div><div class="category-meta"><span>${count} payment${count===1?'':'s'}</span><span>${share.toFixed(1)}% of paid</span><span>${budgetText}</span></div></div>
+        <div class="category-amount">${money(amt)}</div>
+      </div>
+      <div class="mini-bar"><span style="width:${Math.min(100,share)}%"></span></div>
+    </div>`;
+  }).join('')}</div>`;
+}
+function contractorTable(){
+  if(!data.contractor.length) return '<div class="mini">No payments yet.</div>';
+  const q=String(contractorFilter||'').trim().toLowerCase();
+  const rows=[...data.contractor].filter(x=>!q||[x.date,x.payee,x.category,x.source,x.mode,x.note].some(v=>String(v||'').toLowerCase().includes(q))).sort((a,b)=>a.date<b.date?1:-1);
+  return `<table><thead><tr><th>Date</th><th>Payee</th><th>Category</th><th>Source</th><th>Mode</th><th>Reference</th><th>Amount</th><th>Status</th><th class="action-col">Actions</th></tr></thead><tbody>
+  ${rows.map(x=>{ const i=data.contractor.indexOf(x), edit=isEditing('contractor',i);
+    if(edit) return `<tr class="row-editing">
+      <td>${editValue('cpeDate',x.date,'date')}</td><td>${editValue('cpePayee',x.payee)}</td>
+      <td><select id="cpeCategory" class="ledger-edit wide">${optionList(CONTRACTOR_CATEGORIES,x.category)}</select></td>
+      <td><select id="cpeSource" class="ledger-edit wide">${optionList(FUNDING_SOURCES,x.source)}</select></td>
+      <td><select id="cpeMode" class="ledger-edit">${optionList(['Bank Transfer','Cash','UPI','Cheque','Other'],x.mode)}</select></td>
+      <td>${editValue('cpeNote',x.note)}</td><td>${editValue('cpeAmount',x.amount,'number','min="0"')}</td><td>${rowStatusHTML(x)}</td>
+      <td class="action-col"><div class="row-actions"><button onclick="saveContractorEdit(${i})">Save</button><button class="cancel-btn small-btn" onclick="cancelLedgerEdit('contractor')">Cancel</button></div></td></tr>`;
+    return `<tr class="${x.frozen?'row-locked':''}"><td>${dateFmt(x.date)}</td><td>${esc(x.payee)}</td><td>${esc(x.category)}</td><td><span class="tag">${esc(x.source)}</span></td><td>${esc(x.mode)}</td><td>${esc(x.note||'')}</td><td class="num">${money(x.amount)}</td><td>${rowStatusHTML(x)}</td><td class="action-col">${rowActionHTML('contractor',i,x)}</td></tr>`;
+  }).join('')}
+  </tbody></table>`;
+}
+function saveContractorEdit(i){
+  const row=data.contractor[i]; if(!row||row.frozen) return;
+  const next={date:cpeDate.value,payee:cpePayee.value.trim(),category:cpeCategory.value,source:cpeSource.value,mode:cpeMode.value,note:cpeNote.value,amount:Number(cpeAmount.value||0)};
+  if(!next.date||!next.payee||!next.amount){ alert('Enter date, payee and amount.'); return; }
+  Object.assign(row,next,{updatedAt:new Date().toISOString()}); ledgerEdit={type:null,index:null}; save();
+}
+
+
+/* ---------- BUDGET & FUNDING ---------- */
+function renderBudgetTab(){
+  const project=Number(data.loan.projectCost||0), planned=budgetPlannedTotal(), paid=contractorTotal(), funding=fundingPlannedTotal(), indirectPlanned=indirectPlannedTotal(), allIn=allInPlannedCost();
+  document.getElementById('budget').innerHTML=`
+  <div class="grid kpi">
+    <div class="sheet kpi-card"><div class="kpi-label">Direct Project Cost</div><div class="kpi-value">${moneyShort(project)}</div><div class="kpi-foot">Builder / design / construction scope</div></div>
+    <div class="sheet kpi-card"><div class="kpi-label">Direct Budget Allocated</div><div class="kpi-value">${moneyShort(planned)}</div><div class="kpi-foot">${moneyShort(Math.max(0,project-planned))} unallocated</div></div>
+    <div class="sheet kpi-card"><div class="kpi-label">Direct Actual Paid</div><div class="kpi-value">${moneyShort(paid)}</div><div class="kpi-foot">${project?((paid/project)*100).toFixed(1):0}% of direct project cost</div></div>
+    <div class="sheet kpi-card"><div class="kpi-label">Indirect Planned</div><div class="kpi-value">${moneyShort(indirectPlanned)}</div><div class="kpi-foot"><button class="secondary small-btn" onclick="showTab('indirect')">Open Indirect Costs</button></div></div>
+    <div class="sheet kpi-card"><div class="kpi-label">All-in Planned Cost</div><div class="kpi-value">${moneyShort(allIn)}</div><div class="kpi-foot">Direct + indirect carrying costs</div></div>
+    <div class="sheet kpi-card"><div class="kpi-label">Funding Planned</div><div class="kpi-value">${moneyShort(funding)}</div><div class="kpi-foot">${moneyShort(Math.max(0,allIn-funding))} all-in gap</div></div>
+  </div>
+  <div class="grid two" style="margin-top:14px">
+    <div class="sheet">
+      <div class="split-head"><div><h2>Budget vs Actual</h2><div class="sub">Allocate only the direct ₹${Number(project||0).toLocaleString('en-IN')} construction/project estimate by category. Indirect carrying costs are tracked separately.</div></div><div class="inline-actions" style="margin-top:0"><button class="secondary small-btn" onclick="downloadBudgetCSV()">CSV</button><button onclick="addBudgetRow()">Add Category</button></div></div>
+      <div class="table-wrap compact-table"><table><thead><tr><th>Category</th><th>Planned</th><th>Paid</th><th>Variance</th><th>Note</th><th></th></tr></thead><tbody>
+      ${(data.budget||[]).map((x,i)=>{ const actual=budgetActual(x.category), variance=Number(x.planned||0)-actual; return `<tr>
+        <td><select onchange="data.budget[${i}].category=this.value;save()">${[...new Set([...CONTRACTOR_CATEGORIES,x.category])].map(c=>`<option ${c===x.category?'selected':''}>${esc(c)}</option>`).join('')}</select></td>
+        <td><input type="number" value="${Number(x.planned||0)}" onchange="data.budget[${i}].planned=Number(this.value||0);save()"></td>
+        <td class="num">${money(actual)}</td><td class="num ${variance<0?'amount-negative':'amount-positive'}">${money(variance)}</td>
+        <td><input value="${esc(x.note||'')}" onchange="data.budget[${i}].note=this.value;save()"></td>
+        <td><button class="danger small-btn" onclick="data.budget.splice(${i},1);save()">Delete</button></td></tr>`;}).join('')}
+      </tbody></table></div>
+      ${planned>project?`<div class="helper warn" style="margin-top:9px">Allocated budget exceeds the project cost by <strong>${money(planned-project)}</strong>.</div>`:`<div class="helper" style="margin-top:9px">Unallocated project budget: <strong>${money(Math.max(0,project-planned))}</strong>.</div>`}
+    </div>
+    <div class="sheet">
+      <div class="split-head"><div><h2>Funding Plan</h2><div class="sub">See where cash for both direct construction and indirect carrying costs is expected to come from and how much has already been used.</div></div><button onclick="addFundingRow()">Add Source</button></div>
+      <div class="table-wrap compact-table"><table><thead><tr><th>Source</th><th>Planned</th><th>Used</th><th>Available</th><th>Note</th><th></th></tr></thead><tbody>
+      ${(data.funding||[]).map((x,i)=>{ const used=fundingUsed(x.source), available=Number(x.planned||0)-used; return `<tr>
+        <td><select onchange="data.funding[${i}].source=this.value;save()">${[...new Set([...FUNDING_SOURCES,x.source])].map(s=>`<option ${s===x.source?'selected':''}>${esc(s)}</option>`).join('')}</select></td>
+        <td><input type="number" value="${Number(x.planned||0)}" onchange="data.funding[${i}].planned=Number(this.value||0);save()"></td>
+        <td class="num">${money(used)}</td><td class="num ${available<0?'amount-negative':'amount-positive'}">${money(available)}</td>
+        <td><input value="${esc(x.note||'')}" onchange="data.funding[${i}].note=this.value;save()"></td>
+        <td><button class="danger small-btn" onclick="data.funding.splice(${i},1);save()">Delete</button></td></tr>`;}).join('')}
+      </tbody></table></div>
+    </div>
+  </div>
+  <div class="sheet" style="margin-top:14px">
+    <div class="split-head"><div><h2>Loan Disbursement Ledger</h2><div class="sub">Track each construction-linked release from the bank.</div></div></div>
+    <div class="row"><div class="field"><label>Date</label><input id="dbDate" type="date"></div><div class="field"><label>Amount (₹)</label><input id="dbAmount" type="number"></div></div>
+    <div class="row"><div class="field"><label>Stage / Milestone</label><input id="dbStage" placeholder="e.g. Foundation / roof slab"></div><div class="field"><label>Reference</label><input id="dbRef" placeholder="Bank reference / tranche"></div></div>
+    <button onclick="addDisbursement()">Add Disbursement</button>
+    <div class="metric-strip"><div class="metric-mini"><div class="kpi-label">Ledger Disbursed</div><div class="kpi-value">${moneyShort(disbursementTotal())}</div></div><div class="metric-mini"><div class="kpi-label">Sanction Available</div><div class="kpi-value">${moneyShort(loanAvailable())}</div></div></div>
+    <div class="ledger-control-note"><strong>Bank control:</strong> Freeze a tranche after the bank reference and amount are verified.</div>
+    <div class="table-wrap compact-table"><table><thead><tr><th>Date</th><th>Milestone</th><th>Reference</th><th>Amount</th><th>Status</th><th class="action-col">Actions</th></tr></thead><tbody>
+    ${(data.disbursements||[]).length?(data.disbursements||[]).map((x,i)=>{
+      const edit=isEditing('disbursement',i);
+      if(edit) return `<tr class="row-editing"><td>${editValue('dbeDate',x.date,'date')}</td><td>${editValue('dbeStage',x.stage)}</td><td>${editValue('dbeRef',x.reference)}</td><td>${editValue('dbeAmount',x.amount,'number','min="0"')}</td><td>${rowStatusHTML(x)}</td><td class="action-col"><div class="row-actions"><button onclick="saveDisbursementEdit(${i})">Save</button><button class="cancel-btn small-btn" onclick="cancelLedgerEdit('disbursement')">Cancel</button></div></td></tr>`;
+      return `<tr class="${x.frozen?'row-locked':''}"><td>${dateFmt(x.date)}</td><td>${esc(x.stage||'')}</td><td>${esc(x.reference||'')}</td><td class="num">${money(x.amount)}</td><td>${rowStatusHTML(x)}</td><td class="action-col">${rowActionHTML('disbursement',i,x)}</td></tr>`;
+    }).join(''):'<tr><td colspan="6" class="mini">No bank disbursements recorded yet.</td></tr>'}
+    </tbody></table></div>
+  </div>`;
+}
+function addBudgetRow(){ data.budget.push({category:'Other',planned:0,note:''}); save(); }
+function addFundingRow(){ data.funding.push({source:'Other',planned:0,note:''}); save(); }
+function syncDisbursement(){ data.loan.disbursed=disbursementTotal(); }
+function addDisbursement(){
+  const row={date:dbDate.value,amount:Number(dbAmount.value||0),stage:dbStage.value,reference:dbRef.value,frozen:false,createdAt:new Date().toISOString()};
+  if(!row.date||!row.amount){ alert('Enter disbursement date and amount.'); return; }
+  data.disbursements.push(row); data.loan.disbursed=disbursementTotal(); save();
+}
+function saveDisbursementEdit(i){
+  const row=data.disbursements[i]; if(!row||row.frozen) return;
+  const next={date:dbeDate.value,stage:dbeStage.value,reference:dbeRef.value,amount:Number(dbeAmount.value||0)};
+  if(!next.date||!next.amount){ alert('Enter disbursement date and amount.'); return; }
+  Object.assign(row,next,{updatedAt:new Date().toISOString()}); ledgerEdit={type:null,index:null}; syncDisbursement(); save();
+}
+
+/* ---------- INDIRECT / CARRYING COSTS ---------- */
+function renderIndirectTab(){
+  const planned=indirectPlannedTotal(), actual=indirectActualTotal(), direct=Number(data.loan.projectCost||0), allIn=allInPlannedCost(), over=indirectOverPlanTotal(), indirectCats=indirectCategories();
+  document.getElementById('indirect').innerHTML=`
+  <div class="grid kpi">
+    <div class="sheet kpi-card"><div class="kpi-label">Indirect Planned</div><div class="kpi-value">${moneyShort(planned)}</div><div class="kpi-foot">Outside builder/direct project scope</div></div>
+    <div class="sheet kpi-card"><div class="kpi-label">Indirect Paid</div><div class="kpi-value">${moneyShort(actual)}</div><div class="kpi-foot">${moneyShort(Math.max(0,planned-actual))} net plan remaining</div></div>
+    <div class="sheet kpi-card"><div class="kpi-label">Over-Plan Categories</div><div class="kpi-value">${moneyShort(over)}</div><div class="kpi-foot">Actual above category-level plan</div></div>
+    <div class="sheet kpi-card"><div class="kpi-label">Direct Project Cost</div><div class="kpi-value">${moneyShort(direct)}</div><div class="kpi-foot">Kept separate for clean cost-per-sq-ft analysis</div></div>
+    <div class="sheet kpi-card"><div class="kpi-label">All-in Planned Cost</div><div class="kpi-value">${moneyShort(allIn)}</div><div class="kpi-foot">Direct ${moneyShort(direct)} + indirect ${moneyShort(planned)}</div></div>
+  </div>
+  <div class="notice">Use this tab for costs caused by the construction period but <strong>not part of the builder/contractor scope</strong>—for example temporary home rent, electricity/water, plan approvals, bank/legal/valuation charges, MODT/registration, shifting/storage and pre-EMI interest.</div>
+  <div class="sheet">
+    <div class="split-head"><div><h2>Indirect Spend Analysis</h2><div class="sub">Actual payments are classified by purpose and funding source, so legal/property documentation does not inflate bank-processing expenses.</div></div><button class="secondary small-btn" onclick="downloadIndirectCSV()">CSV</button></div>
+    <div class="analysis-grid">
+      <div><h3>By Category</h3>${indirectCategoryCards()}</div>
+      <div><h3>By Funding Source</h3>${sourceBreakdownHTML(indirectSourceBreakdown())}</div>
+    </div>
+  </div>
+  <div class="sheet" style="margin-top:14px">
+    <div class="split-head"><div><h2>Indirect Cost Budget</h2><div class="sub">Plan recurring and one-time carrying costs separately from the ₹${Number(direct||0).toLocaleString('en-IN')} direct project cost.</div></div><div class="inline-actions" style="margin-top:0"><button class="secondary small-btn" onclick="downloadIndirectCSV()">CSV</button><button onclick="focusNewIndirectCategory()">New Category</button></div></div>
+    <div class="category-create" id="indirectCategoryCreator">
+      <div class="field"><label>New Category Name</label><input id="newIndirectCategoryName" placeholder="e.g. Demolition permit / Watchman / Temporary accommodation"></div>
+      <div class="field"><label>Planned Amount (₹)</label><input id="newIndirectCategoryPlanned" type="number" min="0" placeholder="0"></div>
+      <div class="field"><label>Planning Note</label><input id="newIndirectCategoryNote" placeholder="Optional description or basis"></div>
+      <button onclick="createIndirectCategory()">Add Category</button>
+    </div>
+    <div class="mini">Custom categories are automatically available in the Indirect Expense Ledger below.</div>
+    <div class="category-chip-list">${indirectCats.map(c=>`<span class="category-chip">${esc(c)}</span>`).join('')}</div>
+    <div class="table-wrap compact-table" style="margin-top:10px"><table><thead><tr><th>Category</th><th>Planned</th><th>Paid</th><th>Variance</th><th>Planning Note</th><th></th></tr></thead><tbody>
+    ${(data.indirectBudget||[]).map((x,i)=>{ const paid=indirectBudgetActual(x.category), variance=Number(x.planned||0)-paid; return `<tr>
+      <td><select onchange="data.indirectBudget[${i}].category=this.value;save()">${indirectCats.map(c=>`<option ${c===x.category?'selected':''}>${esc(c)}</option>`).join('')}</select></td>
+      <td><input type="number" value="${Number(x.planned||0)}" onchange="data.indirectBudget[${i}].planned=Number(this.value||0);save()"></td>
+      <td class="num">${money(paid)}</td><td class="num ${variance<0?'amount-negative':'amount-positive'}">${money(variance)}</td>
+      <td><input value="${esc(x.note||'')}" onchange="data.indirectBudget[${i}].note=this.value;save()"></td>
+      <td><button class="danger small-btn" onclick="deleteIndirectBudgetCategory(${i})">Delete</button></td></tr>`;}).join('')}
+    </tbody></table></div>
+    ${over?`<div class="cost-alert" style="margin-top:10px">Category-level actuals currently exceed their planned amounts by <strong>${money(over)}</strong> in total. This can happen even when the overall indirect budget still has room.</div>`:''}
+  </div>
+  <div class="sheet" style="margin-top:14px">
+    <div class="split-head"><div><h2>Indirect Expense Ledger</h2><div class="sub">Edit open entries, then Freeze verified expenses so the final record cannot be accidentally changed.</div></div><div class="ledger-stats"><span class="stat-chip"><strong>${(data.indirectExpenses||[]).length}</strong> records</span><span class="stat-chip final-count"><strong>${frozenCount(data.indirectExpenses)}</strong> frozen</span></div></div>
+    <div class="row"><div class="field"><label>Date</label><input id="ieDate" type="date"></div><div class="field"><label>Category</label><select id="ieCategory">${indirectCats.map(c=>`<option>${esc(c)}</option>`).join('')}</select></div></div>
+    <div class="row"><div class="field"><label>Description / Period</label><input id="ieDescription" placeholder="e.g. Sep 2026 temporary rent"></div><div class="field"><label>Amount (₹)</label><input id="ieAmount" type="number"></div></div>
+    <div class="row"><div class="field"><label>Funding Source</label><select id="ieSource">${FUNDING_SOURCES.map(s=>`<option>${esc(s)}</option>`).join('')}</select></div><div class="field"><label>Reference / Note</label><input id="ieNote" placeholder="Receipt, approval ref, EB bill, bank charge, etc."></div></div>
+    <div class="inline-actions"><button onclick="addIndirectExpense()">Add Expense</button><button class="secondary small-btn" onclick="downloadIndirectCSV()">Download CSV</button></div>
+    <div class="ledger-control-note"><strong>Workflow:</strong> Edit → Save → Freeze. Unlock is intentionally a confirmed action for corrections only.</div>
+    <div class="table-wrap compact-table"><table><thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Source</th><th>Reference</th><th>Amount</th><th>Status</th><th class="action-col">Actions</th></tr></thead><tbody>
+    ${(data.indirectExpenses||[]).length?(data.indirectExpenses||[]).map((x,i)=>{
+      const edit=isEditing('indirect',i);
+      if(edit) return `<tr class="row-editing">
+        <td>${editValue('ieeDate',x.date,'date')}</td><td><select id="ieeCategory" class="ledger-edit wide">${optionList(indirectCats,x.category)}</select></td>
+        <td>${editValue('ieeDescription',x.description)}</td><td><select id="ieeSource" class="ledger-edit wide">${optionList(FUNDING_SOURCES,x.source)}</select></td>
+        <td>${editValue('ieeNote',x.note)}</td><td>${editValue('ieeAmount',x.amount,'number','min="0"')}</td><td>${rowStatusHTML(x)}</td>
+        <td class="action-col"><div class="row-actions"><button onclick="saveIndirectEdit(${i})">Save</button><button class="cancel-btn small-btn" onclick="cancelLedgerEdit('indirect')">Cancel</button></div></td></tr>`;
+      return `<tr class="${x.frozen?'row-locked':''}"><td>${dateFmt(x.date)}</td><td>${esc(x.category||'')}</td><td>${esc(x.description||'')}</td><td>${esc(x.source||'')}</td><td>${esc(x.note||'')}</td><td class="num">${money(x.amount)}</td><td>${rowStatusHTML(x)}</td><td class="action-col">${rowActionHTML('indirect',i,x)}</td></tr>`;
+    }).join(''):'<tr><td colspan="8" class="mini">No indirect payments recorded yet.</td></tr>'}
+    </tbody></table></div>
+  </div>`;
+}
+function focusNewIndirectCategory(){
+  const el=document.getElementById('newIndirectCategoryName'); if(el){ el.focus(); el.scrollIntoView({behavior:'smooth',block:'center'}); }
+}
+function createIndirectCategory(){
+  const name=String(document.getElementById('newIndirectCategoryName')?.value||'').trim();
+  const planned=Number(document.getElementById('newIndirectCategoryPlanned')?.value||0);
+  const note=String(document.getElementById('newIndirectCategoryNote')?.value||'').trim();
+  if(!name){ alert('Enter a category name.'); return; }
+  const existing=(data.indirectBudget||[]).find(x=>String(x.category||'').trim().toLowerCase()===name.toLowerCase());
+  if(existing){ alert('That indirect-cost category already exists in the budget.'); return; }
+  data.indirectBudget.push({category:name,planned:Math.max(0,planned),note}); save();
+}
+function addIndirectBudgetRow(){ focusNewIndirectCategory(); }
+function deleteIndirectBudgetCategory(i){
+  const row=data.indirectBudget?.[i]; if(!row) return;
+  const actual=indirectBudgetActual(row.category);
+  const msg=actual>0
+    ? `Delete the budget row “${row.category}”? ${money(actual)} of actual expenses already use this category. The expense records will remain, but this category will no longer have a planned budget row.`
+    : `Delete the budget category “${row.category}”?`;
+  if(confirm(msg)){ data.indirectBudget.splice(i,1); save(); }
+}
+function addIndirectExpense(){
+  const row={date:ieDate.value,category:ieCategory.value,description:ieDescription.value,amount:Number(ieAmount.value||0),source:ieSource.value,note:ieNote.value,frozen:false,createdAt:new Date().toISOString()};
+  if(!row.date||!row.amount){ alert('Enter expense date and amount.'); return; }
+  data.indirectExpenses.push(row); save();
+}
+function saveIndirectEdit(i){
+  const row=data.indirectExpenses[i]; if(!row||row.frozen) return;
+  const next={date:ieeDate.value,category:ieeCategory.value,description:ieeDescription.value,source:ieeSource.value,note:ieeNote.value,amount:Number(ieeAmount.value||0)};
+  if(!next.date||!next.amount){ alert('Enter expense date and amount.'); return; }
+  Object.assign(row,next,{updatedAt:new Date().toISOString()}); ledgerEdit={type:null,index:null}; save();
+}
+
+/* ---------- PROCESSING STAGE ---------- */
+function renderProcessingTab(){
+  const st=Number(data.processing.stage||0);
+  const days=data.processing.updated ? Math.max(0,-daysFromToday(data.processing.updated)) : null;
+  document.getElementById('processing').innerHTML=`
+  <div class="sheet">
+    <h2 style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">Loan Processing Stage ${stampBadge(STAGES[st],'cloth',justChangedStage)}</h2>
+    <div class="sub">Tap a stage to mark it current. Earlier stages are shown as completed.</div>
+    <div class="timeline">
+      ${STAGES.map((s,i)=>`<button type="button" class="stage ${i<st?'done':''} ${i===st?'current':''}" onclick="setStage(${i})"><strong>${i+1}. ${esc(s)}</strong><small>${i<st?'Completed':i===st?'Current':'Pending'}</small></button>`).join('')}
+    </div>
+    <hr>
+    <div class="row">${fld('Last Updated','processing.updated',data.processing.updated,'date')}<div class="field"><label>Current Status</label><input value="${esc(STAGES[st])}" disabled></div></div>
+    ${days!=null?`<div class="mini">${days} day${days===1?'':'s'} in this stage</div>`:''}
+    <div class="field" style="margin-top:8px"><label>Remarks / Pending Action</label><textarea onchange="setPath('processing.remarks',this.value)">${esc(data.processing.remarks)}</textarea></div>
+  </div>`;
+}
+function setStage(i){
+  data.processing.stage=i;
+  data.processing.updated=new Date().toISOString().slice(0,10);
+  justChangedStage=true;
+  save();
+}
+
+
+/* ---------- ACTION TRACKER ---------- */
+function renderActionsTab(){
+  const rows=[...(data.actions||[])].sort((a,b)=>{ if((a.status==='Done')!==(b.status==='Done')) return a.status==='Done'?1:-1; return (a.due||'9999')>(b.due||'9999')?1:-1; });
+  const open=rows.filter(x=>x.status!=='Done').length;
+  document.getElementById('actions').innerHTML=`
+  <div class="grid two">
+    <div class="sheet">
+      <h2>Add Action / Follow-up</h2><div class="sub">Use this for bank documents, approvals, construction milestones, insurance renewals or payments to chase.</div>
+      <div class="field"><label>Action</label><input id="actTitle" placeholder="What needs to happen?"></div>
+      <div class="row"><div class="field"><label>Due Date</label><input id="actDue" type="date"></div><div class="field"><label>Owner</label><input id="actOwner" placeholder="Self / bank / contractor / family"></div></div>
+      <div class="row"><div class="field"><label>Status</label><select id="actStatus">${ACTION_STATUS.map(x=>`<option>${x}</option>`).join('')}</select></div><div class="field"><label>Category</label><input id="actCategory" placeholder="Loan / Construction / Insurance"></div></div>
+      <div class="field"><label>Note</label><input id="actNote" placeholder="Reference, document or next step"></div>
+      <button onclick="addAction()">Add Action</button>
+    </div>
+    <div class="sheet"><h2>Follow-up Snapshot</h2><div class="grid kpi"><div><div class="kpi-label">Open</div><div class="kpi-value">${open}</div></div><div><div class="kpi-label">Completed</div><div class="kpi-value">${rows.length-open}</div></div></div><hr>${nextOpenAction()?`<div class="helper warn"><strong>Next:</strong> ${esc(nextOpenAction().title)}${nextOpenAction().due?' · '+dateFmt(nextOpenAction().due):''}</div>`:'<div class="helper ok">No open actions recorded.</div>'}</div>
+  </div>
+  <div class="sheet" style="margin-top:14px"><h2>Action Register</h2>
+    ${rows.length?rows.map(x=>{ const i=data.actions.indexOf(x), overdue=x.status!=='Done'&&x.due&&daysFromToday(x.due)<0; return `<div class="action-card"><div class="action-dot ${x.status==='Done'?'done':overdue?'overdue':''}"></div><div><strong>${esc(x.title)}</strong><div class="mini">${esc(x.category||'General')} · ${esc(x.owner||'Unassigned')} · ${x.due?dateFmt(x.due):'No due date'} · ${esc(x.status||'Open')}</div>${x.note?`<div class="mini" style="margin-top:4px">${esc(x.note)}</div>`:''}</div><div class="inline-actions" style="margin-top:0"><button class="secondary small-btn" onclick="toggleAction(${i})">${x.status==='Done'?'Reopen':'Done'}</button><button class="danger small-btn" onclick="data.actions.splice(${i},1);save()">Delete</button></div></div>`;}).join(''):'<div class="mini">No actions yet.</div>'}
+  </div>`;
+}
+function addAction(){
+  const row={title:actTitle.value.trim(),due:actDue.value,owner:actOwner.value.trim(),status:actStatus.value,category:actCategory.value.trim(),note:actNote.value.trim()};
+  if(!row.title){ alert('Enter an action.'); return; } data.actions.push(row); save();
+}
+function toggleAction(i){ data.actions[i].status=data.actions[i].status==='Done'?'Open':'Done'; save(); }
+
+/* ---------- EMERGENCY FUND ---------- */
+function renderEmergencyTab(){
+  const em=calcEmergency();
+  document.getElementById('emergency').innerHTML=`
+  <div class="grid two">
+    <div class="sheet">
+      <h2>Emergency Fund</h2>
+      <div class="row">${fld('Monthly Essential Expenses (₹)','emergency.monthlyEssentials',data.emergency.monthlyEssentials,'number')}${fld('Target Months of Cover','emergency.targetMonths',data.emergency.targetMonths,'number')}</div>
+      <div class="row">${fld('Current Emergency Fund (₹)','emergency.currentFund',data.emergency.currentFund,'number')}${fld('Monthly Contribution (₹)','emergency.monthlyContribution',data.emergency.monthlyContribution,'number')}</div>
+      ${fld('Other Sinking Funds (₹)','emergency.sinkingFund',data.emergency.sinkingFund,'number')}
+    </div>
+    <div class="sheet">
+      <h2>Safety Buffer</h2>
+      <div class="kpi-label">Target</div><div class="kpi-value">${money(em.target)}</div>
+      <div class="progress" style="margin-top:8px"><div class="bar" style="width:${em.pct}%"></div></div>
+      <div class="mini" style="margin-top:7px">${em.pct.toFixed(0)}% funded · Gap ${money(em.gap)}</div>
+      <hr>
+      ${em.gap<=0?`<div class="helper ok">Target reached — you can direct more free cash toward prepayment while keeping this buffer intact.</div>`
+        :em.monthsToTarget?`<div class="helper warn">At ${money(data.emergency.monthlyContribution)}/month, this gap closes in about <strong>${em.monthsToTarget} month${em.monthsToTarget===1?'':'s'}</strong>.</div>`
+        :`<div class="helper warn">Set a monthly contribution to see when this gap closes.</div>`}
+    </div>
+  </div>`;
+}
+
+/* ---------- FAMILY ---------- */
+function renderFamilyTab(){
+  document.getElementById('family').innerHTML=`
+  <div class="sheet">
+    <h2>Family &amp; Co-applicant Details</h2>
+    <div class="inline-actions"><button onclick="addFamily()">Add Person</button></div>
+    <div class="table-wrap" style="margin-top:10px"><table><thead><tr><th>Name</th><th>Relationship</th><th>DOB</th><th>Role</th><th>Notes</th><th></th></tr></thead><tbody>
+    ${data.family.map((x,i)=>`<tr>
+      <td><input value="${esc(x.name)}" onchange="data.family[${i}].name=this.value;save()"></td>
+      <td><input value="${esc(x.relation)}" onchange="data.family[${i}].relation=this.value;save()"></td>
+      <td><input type="date" value="${x.dob||''}" onchange="data.family[${i}].dob=this.value;save()"></td>
+      <td><input value="${esc(x.dependency)}" onchange="data.family[${i}].dependency=this.value;save()"></td>
+      <td><input value="${esc(x.notes)}" onchange="data.family[${i}].notes=this.value;save()"></td>
+      <td><button class="danger small-btn" onclick="data.family.splice(${i},1);save()">Delete</button></td>
+    </tr>`).join('')}
+    </tbody></table></div>
+  </div>`;
+}
+function addFamily(){ data.family.push({name:'',relation:'',dob:'',dependency:'',notes:''}); save(); }
+
+/* ---------- INSURANCE ---------- */
+function renderInsuranceTab(){
+  document.getElementById('insurance').innerHTML=`
+  <div class="grid kpi">
+    <div class="sheet kpi-card"><div class="kpi-label">Health Cover</div><div class="kpi-value">${moneyShort(coverageByType('Health'))}</div></div>
+    <div class="sheet kpi-card"><div class="kpi-label">Term Life Cover</div><div class="kpi-value">${moneyShort(coverageByType('Term Life'))}</div></div>
+  </div>
+  <div class="sheet" style="margin-top:14px">
+    <h2>Insurance Register</h2>
+    <div class="inline-actions"><button onclick="addInsurance()">Add Policy</button></div>
+    <div class="table-wrap" style="margin-top:10px"><table><thead><tr><th>Policy</th><th>Type</th><th>Structure</th><th>Covers</th><th>Provider</th><th>Sum Insured</th><th>Deductible</th><th>Premium</th><th>Renewal</th><th>Notes</th><th></th></tr></thead><tbody>
+    ${data.insurance.map((x,i)=>{ const urgency=renewalUrgency(x.renewal);
+      return `<tr>
+      <td><input value="${esc(x.name)}" onchange="data.insurance[${i}].name=this.value;save()"></td>
+      <td><select onchange="data.insurance[${i}].type=this.value;save()">${INSURANCE_TYPES.map(t=>`<option ${x.type===t?'selected':''}>${t}</option>`).join('')}</select></td>
+      <td><select onchange="data.insurance[${i}].structure=this.value;save()">${INSURANCE_STRUCTURES.map(t=>`<option ${x.structure===t?'selected':''}>${t}</option>`).join('')}</select></td>
+      <td><input value="${esc(x.covers)}" onchange="data.insurance[${i}].covers=this.value;save()"></td>
+      <td><input value="${esc(x.provider)}" onchange="data.insurance[${i}].provider=this.value;save()"></td>
+      <td><input type="number" value="${x.sumInsured||0}" onchange="data.insurance[${i}].sumInsured=Number(this.value||0);save()"></td>
+      <td><input type="number" value="${x.deductible||0}" onchange="data.insurance[${i}].deductible=Number(this.value||0);save()"></td>
+      <td><input type="number" value="${x.premium||0}" onchange="data.insurance[${i}].premium=Number(this.value||0);save()"></td>
+      <td><input type="date" value="${x.renewal||''}" onchange="data.insurance[${i}].renewal=this.value;save()">${urgency?stampBadge(urgency==='expired'?'Expired':'Renew Soon'):''}</td>
+      <td><input value="${esc(x.notes)}" onchange="data.insurance[${i}].notes=this.value;save()"></td>
+      <td><button class="danger small-btn" onclick="data.insurance.splice(${i},1);save()">Delete</button></td>
+    </tr>`; }).join('')}
+    </tbody></table></div>
+    <div class="mini" style="margin-top:9px">Use Notes to record waiting periods, exclusions, nominees, moratorium dates and special conditions that matter to your family.</div>
+    <div class="helper" style="margin-top:10px">Add property / structure cover here if your lender or project requires it.</div>
+  </div>`;
+}
+function addInsurance(){ data.insurance.push({name:'',type:'Health',structure:'Individual',covers:'',provider:'',sumInsured:0,deductible:0,premium:0,renewal:'',notes:''}); save(); }
+
+/* ---------- STRATEGY ---------- */
+function renderStrategyTab(){
+  const base=baselineSchedule(), plan=buildSchedule(true), em=calcEmergency();
+  const saved=base.length&&plan.length?totalInterest(base)-totalInterest(plan):0;
+  const monthsSaved=base.length&&plan.length?Math.max(0,base.length-plan.length):0;
+  document.getElementById('strategy').innerHTML=`
+  <div class="grid two">
+    <div class="sheet">
+      <h2>Repay Faster — Inputs</h2>
+      <div class="row">${fld('Extra Monthly Prepayment (₹)','loan.extraMonthly',data.loan.extraMonthly,'number')}${fld('Annual EMI Step-Up (%)','loan.emiStepUpPercent',data.loan.emiStepUpPercent,'number','step="1" min="0" max="25"')}</div>
+      <div class="row">${fld('Annual Lump Sum (₹)','loan.annualLumpSum',data.loan.annualLumpSum,'number')}${fld('Lump Sum Month (1–12)','loan.lumpSumMonth',data.loan.lumpSumMonth,'number','min="1" max="12"')}</div>
+      <div class="row">${fld('Cash Buffer Floor (₹)','strategy.cashBufferFloor',data.strategy.cashBufferFloor,'number')}${fld('Expected Annual Bonus (₹)','strategy.annualBonus',data.strategy.annualBonus,'number')}</div>
+      <div class="row">${fld('Monthly Surplus % → Prepay','strategy.prepayPercent',data.strategy.prepayPercent,'number','min="0" max="100"')}${fld('Bonus % → Prepay','strategy.bonusPrepayPercent',data.strategy.bonusPrepayPercent,'number','min="0" max="100"')}</div>
+    </div>
+    <div class="sheet">
+      <h2>Impact</h2>
+      ${!validLoan()?'<div class="helper warn">Complete Loan Setup first.</div>':`
+      <div class="grid kpi">
+        <div><div class="kpi-label">Interest Saved</div><div class="kpi-value">${moneyShort(Math.max(0,saved))}</div></div>
+        <div><div class="kpi-label">Months Saved</div><div class="kpi-value">${monthsSaved}</div></div>
+        <div><div class="kpi-label">Debt-Free (Plan)</div><div class="kpi-value" style="font-size:17px">${dateFmt(plan.at(-1)?.date)}</div></div>
+      </div>`}
+      <hr>
+      ${data.loan.targetDebtFree?`<div class="summary-box"><div class="kpi-label">Target-Date Calculator</div><div style="margin-top:5px">To target <strong>${dateFmt(data.loan.targetDebtFree)}</strong>, estimated extra monthly principal needed: <strong>${requiredExtraForTarget()===null?'—':money(requiredExtraForTarget())}</strong>.</div><div class="mini" style="margin-top:4px">This estimate uses your current rate, starting balance and standard EMI, and should be rechecked after rate changes.</div></div>`:`<div class="helper">Set a Target Debt-Free Date in Loan Setup to calculate the approximate extra monthly payment required.</div>`}
+      <div class="helper" style="margin-top:8px">These are planning projections from the rate, tenure and prepayment assumptions you've entered. Actual bank interest, rate resets, fees and part-disbursement rules may differ — reforecast here after each bank update.</div>
+    </div>
+  </div>
+  <div class="sheet" style="margin-top:14px">
+    <h2>Debt-Reduction Playbook</h2>
+    <div class="playbook">
+      <div class="play-item"><div class="mark">1</div><div><strong>Protect the emergency floor first.</strong><div class="mini">Current gap: ${money(em.gap)}. A prepayment that forces you to borrow again defeats the purpose.</div></div></div>
+      <div class="play-item"><div class="mark">2</div><div><strong>Let EMI step up with income.</strong><div class="mini">Even 5–10%/year compounds fast and meaningfully shortens tenure without changing your monthly comfort today.</div></div></div>
+      <div class="play-item"><div class="mark">3</div><div><strong>Automate a monthly extra payment you can sustain.</strong><div class="mini">Small and consistent beats large and occasional — set an amount you'd keep paying even in a high-expense month.</div></div></div>
+      <div class="play-item"><div class="mark">4</div><div><strong>Route windfalls deliberately.</strong><div class="mini">Bonuses, gold/asset proceeds and project savings can split between the emergency fund and principal using the percentages above.</div></div></div>
+      <div class="play-item"><div class="mark">5</div><div><strong>Reforecast after every disbursement or rate reset.</strong><div class="mini">Update outstanding balance and rate in Loan Setup to keep this projection accurate.</div></div></div>
+    </div>
+  </div>`;
+}
+
+/* ---------- csv / backup ---------- */
+function csvDownload(name,rows){
+  const csv=rows.map(r=>r.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); URL.revokeObjectURL(a.href);
+}
+function downloadContractorCSV(){
+  const rows=[['Date','Payee','Category','Source','Mode','Reference','Amount','Status','Frozen At'], ...data.contractor.map(x=>[x.date,x.payee,x.category,x.source,x.mode,x.note,x.amount,x.frozen?'Frozen':'Open',x.frozenAt||''])];
+  csvDownload('contractor-payments.csv',rows);
+}
+function downloadScheduleCSV(){
+  const rows=[['No','Due Date','EMI','Interest','Principal','Prepayment','Closing Balance'], ...buildSchedule(true).map(x=>[x.n,x.date,x.emi.toFixed(2),x.interest.toFixed(2),x.principal.toFixed(2),(x.prepay||0).toFixed(2),x.close.toFixed(2)])];
+  csvDownload('repayment-schedule.csv',rows);
+}
+function downloadBudgetCSV(){ const rows=[['Category','Planned','Paid','Variance','Note'],...(data.budget||[]).map(x=>[x.category,x.planned,budgetActual(x.category),Number(x.planned||0)-budgetActual(x.category),x.note])]; csvDownload('direct-project-budget.csv',rows); }
+function downloadIndirectCSV(){ const rows=[['Category','Planned','Paid','Variance','Note'],...(data.indirectBudget||[]).map(x=>[x.category,x.planned,indirectBudgetActual(x.category),Number(x.planned||0)-indirectBudgetActual(x.category),x.note]),[],['Actual Date','Category','Description','Source','Reference','Amount','Status','Frozen At'],...(data.indirectExpenses||[]).map(x=>[x.date,x.category,x.description,x.source,x.note,x.amount,x.frozen?'Frozen':'Open',x.frozenAt||''])]; csvDownload('indirect-construction-costs.csv',rows); }
+function exportBackup(){
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='home-loan-ledger-backup.json'; a.click(); URL.revokeObjectURL(a.href);
+}
+function importBackup(e){
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{ data=mergeDefaults(JSON.parse(r.result)); save(); alert('Backup imported.'); }
+    catch(err){ alert('That file could not be read as a backup.'); }
+  };
+  r.readAsText(f);
+  e.target.value='';
+}
+function resetDemo(){
+  if(confirm('Reset all data back to the starter setup? This cannot be undone.')){
+    data=deepCopy(defaults);
+    save();
+  }
+}
+
+/* ---------- init ---------- */
+async function init(){
+  await waitForStorage(600);
+  data=await loadData();
+  document.getElementById('loadingScreen').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  if(!storageAvailable()){ document.getElementById('offlineNotice').classList.remove('hidden'); setSaveStatus('offline'); }
+  else setSaveStatus('saved');
+  renderAll();
+  await initFolderBackup();
+}
+init();
+</script>
+</body>
+</html>
