@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>What does waiting do? | My Home Loan</title>
+<style>
+:root{color-scheme:light}
+body{margin:0;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:#f4f6f0;color:#22302a}
+.oc-topbar{display:flex;align-items:center;gap:12px;padding:14px 22px;background:#fffefa;border-bottom:1px solid #d9dfd6;flex-wrap:wrap}
+.oc-mark{font-size:22px;color:#274e3c}
+.oc-brand{font-weight:800;color:#274e3c;text-decoration:none;letter-spacing:.4px}
+.oc-brand span{display:block;font-size:10px;font-weight:700;color:#65776f;letter-spacing:1.5px}
+.oc-chip{margin-left:auto;font-size:12px;color:#65776f;border:1px solid #d9dfd6;border-radius:20px;padding:4px 10px}
+.oc-wrap{max-width:960px;margin:0 auto;padding:22px}
+.oc-eyebrow{font-size:11px;font-weight:800;letter-spacing:1.5px;color:#65776f}
+.oc-panel{background:#fffefa;border:1px solid #e0e7de;border-radius:14px;padding:23px;margin-top:18px}
+.oc-panel h2{margin-top:0}
+.oc-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:12px}
+.oc-field label{font-weight:700;font-size:14px}
+.oc-field input{display:block;width:100%;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #aaa;border-radius:6px;margin-top:5px;min-height:44px;font:inherit}
+.oc-field small{color:#65776f}
+.oc-btn{border:1px solid #b9d0bb;border-radius:8px;padding:10px 14px;background:#fffefa;color:#274e3c;font-weight:800;cursor:pointer;font:inherit}
+.oc-btn.selected{background:#274e3c;color:#fff;border-color:#274e3c}
+.oc-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.oc-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:14px 0}
+.oc-card{padding:15px;border:1px solid #e0e7de;border-radius:12px;background:#fff;min-width:0}
+.oc-card h4{margin:0 0 6px;font-size:13px;color:#65776f}
+.oc-big{margin:0;font-size:22px;font-weight:800;overflow-wrap:anywhere}
+.oc-horizon h3{margin-bottom:4px}
+.oc-hint{color:#65776f;font-size:14px}
+.oc-notes{background:#f4f8f1;border:1px solid #c3d8c4;border-radius:10px;padding:12px 14px;margin-top:12px}
+.oc-caveat{border:1px solid #e0e7de;border-radius:10px;padding:12px 14px;margin-top:10px;background:#fbfaf5}
+.oc-caveat p{margin:6px 0 0;color:#45544c}
+.oc-footer{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:22px;color:#65776f;font-size:13px}
+@media(max-width:700px){.oc-fields{grid-template-columns:1fr}.oc-cards{grid-template-columns:1fr}.oc-wrap{padding:14px}}
+</style></head>
+<body>
+<header class="oc-topbar"><span class="oc-mark" aria-hidden="true">⌂</span><a class="oc-brand" href="index.html">MY HOME LOAN<span>PLAN · TRACK · DECIDE</span></a><span class="oc-chip">Local-first · nothing leaves this browser</span></header>
+<main class="oc-wrap" id="oc-app">
+  <div class="oc-eyebrow">OUTCOMES SKETCH</div>
+  <h1>What does waiting do?</h1>
+  <p>An illustration of delaying the purchase by 1 month or 1 year: the rent you keep paying (the loss) against the savings you keep adding (the gain). No property-price change is assumed in either direction. A blank answer is unknown, never zero. This is not financial advice.</p>
+  <div class="oc-panel">
+    <h2>1 · Your regular month while you wait</h2>
+    <div class="oc-fields">
+      <div class="oc-field"><label for="oc-income">Monthly take-home income (₹)</label><input id="oc-income" type="number" min="0" step="any" inputmode="decimal" placeholder="Not sure yet"><small>Salary or business income you can rely on.</small></div>
+      <div class="oc-field"><label for="oc-essentials">Monthly essentials, excluding rent (₹)</label><input id="oc-essentials" type="number" min="0" step="any" inputmode="decimal" placeholder="Not sure yet"><small>Food, utilities, transport, school.</small></div>
+      <div class="oc-field"><label for="oc-debt">Payments on other debts each month (₹)</label><input id="oc-debt" type="number" min="0" step="any" inputmode="decimal" placeholder="0"><small>Optional. Leave blank if none.</small></div>
+      <div class="oc-field"><label for="oc-goal">Monthly long-term goal allocation (₹)</label><input id="oc-goal" type="number" min="0" step="any" inputmode="decimal" placeholder="0"><small>Optional. What you already set aside for goals.</small></div>
+      <div class="oc-field"><label for="oc-rent">Current monthly rent (₹)</label><input id="oc-rent" type="number" min="0" step="any" inputmode="decimal" placeholder="0"><small>0 if you do not pay rent.</small></div>
+    </div>
+    <div class="oc-actions">
+      <button type="button" class="oc-btn selected" id="oc-fictional">Try the fictional example</button>
+      <button type="button" class="oc-btn" id="oc-export">Export as JSON</button>
+      <button type="button" class="oc-btn" id="oc-clear">Clear everything</button>
+    </div>
+  </div>
+  <div id="oc-results"></div>
+</main>
+<footer class="oc-footer"><span>MY HOME LOAN</span><span>A planning sketch, not financial advice.</span></footer>
+<script src="outcomes.js" defer></script>
+</body></html>
