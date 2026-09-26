@@ -123,5 +123,16 @@ const feeBlank = of.knownFees({ fees: [{ label: 'Processing', amount: '', financ
 eq('known fee blank amount: not in cash', feeBlank.cash, 0);
 eq('known fee blank amount: listed unknown', feeBlank.unknown.join(','), 'Processing (marked known but no amount entered)');
 
+// Blank repayment mode: unknown, never a guessed EMI; comparison stays blocked
+const N = { label: 'N', amount: 1200000, rateType: 'fixed', nominalPct: 12, termMonths: 12, preEmiMode: '',
+  draws: [{ label: 'first', amount: 600000, plannedDate: '2027-01', actualDate: '2027-01', status: 'released' }], fees: [], fieldStatus: {} };
+const n1 = of.monthlyOutflow(N, '2027-01', 1);
+eq('blank mode: outflow unknown', n1.outflow, null);
+eq('blank mode: note', n1.note, 'repayment mode unknown');
+eq('blank mode: released debt still shown', of.fromPaise(n1.balance), 600000);
+eq('blank mode: year blocked', of.compareOffers(N, N, '2027-01').a.outflowYear, null);
+eq('chosen emi mode on 600k is explicit', of.fromPaise(of.monthlyOutflow({ ...N, preEmiMode: 'emi' }, '2027-01', 1).outflow), 53309.27);
+eq('chosen pre-EMI mode on 600k is 6,000', of.fromPaise(of.monthlyOutflow({ ...N, preEmiMode: 'interestOnly' }, '2027-01', 1).outflow), 6000);
+
 console.log(fails ? `\n${fails} FAILURES` : '\nALL PASS');
 process.exit(fails ? 1 : 0);
