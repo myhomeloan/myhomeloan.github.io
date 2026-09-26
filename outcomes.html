@@ -35,8 +35,8 @@ body{margin:0;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;b
 <header class="oc-topbar"><span class="oc-mark" aria-hidden="true">⌂</span><a class="oc-brand" href="index.html">MY HOME LOAN<span>PLAN · TRACK · DECIDE</span></a><span class="oc-chip">Local-first · nothing leaves this browser</span></header>
 <main class="oc-wrap" id="oc-app">
   <div class="oc-eyebrow">OUTCOMES SKETCH</div>
-  <h1>What does waiting do?</h1>
-  <p>An illustration of delaying the purchase by 1 month or 1 year: the rent you keep paying (the loss) against the savings you keep adding (the gain). No property-price change is assumed in either direction. A blank answer is unknown, never zero. This is not financial advice.</p>
+  <h1>Your cashflow while you wait</h1>
+  <p>Your cashflow while you wait, over 1 month or 1 year: what is left each month, what reaches your home fund, and the rent paid along the way. This page does not compute a gain or loss from delaying - that needs a full buy-now comparison (occupancy, interim rent, loan start, ownership costs), which is not modeled here. No property-price change is assumed in either direction. A blank answer is unknown, never zero. This is not financial advice.</p>
   <div class="oc-panel">
     <h2>1 · Your regular month while you wait</h2>
     <div class="oc-fields">
@@ -44,7 +44,7 @@ body{margin:0;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;b
       <div class="oc-field"><label for="oc-essentials">Monthly essentials, excluding rent (₹)</label><input id="oc-essentials" type="number" min="0" step="any" inputmode="decimal" placeholder="Not sure yet"><small>Food, utilities, transport, school.</small></div>
       <div class="oc-field"><label for="oc-debt">Payments on other debts each month (₹)</label><input id="oc-debt" type="number" min="0" step="any" inputmode="decimal" placeholder="0"><small>Optional. Leave blank if none.</small></div>
       <div class="oc-field"><label for="oc-goal">Monthly long-term goal allocation (₹)</label><input id="oc-goal" type="number" min="0" step="any" inputmode="decimal" placeholder="0"><small>Optional. What you already set aside for goals.</small></div>
-      <div class="oc-field"><label for="oc-rent">Current monthly rent (₹)</label><input id="oc-rent" type="number" min="0" step="any" inputmode="decimal" placeholder="0"><small>0 if you do not pay rent.</small></div>
+      <div class="oc-field"><label for="oc-rent">Current monthly rent (₹)</label><input id="oc-rent" type="number" min="0" step="any" inputmode="decimal" placeholder="Not sure yet"><small>Enter 0 if you pay no rent. Leave blank if unsure - a blank keeps the waiting cashflow unknown; it is never treated as 0.</small></div>
     </div>
     <div class="oc-actions">
       <button type="button" class="oc-btn selected" id="oc-fictional">Try the fictional example</button>
