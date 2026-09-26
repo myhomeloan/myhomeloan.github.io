@@ -168,8 +168,56 @@ function computeAll(a, rows, stress, life){
   // here, and nothing is ever clamped to fit.
   const invalid = [];
   const finiteIn = (v, lo, hi) => Number.isFinite(Number(v)) && Number(v) >= lo && Number(v) <= hi;
-  if (!missing.includes('income') && !finiteIn(a.income, 0, 1e9)) invalid.push('income outside 0-1,000,000,000');
-  if (!missing.includes('projectCost') && !finiteIn(a.projectCost, 0, 1e11)) invalid.push('project cost outside 0-100,000,000,000');
+  // Every monetary plan input: finite and nonnegative when entered. Blanks stay
+  // in `missing` (required) or stay unknown (optional) - never coerced.
+  const MONEY = [['income', 1e9], ['otherIncome', 1e9], ['essentials', 1e9], ['debt', 1e9], ['ownership', 1e9],
+    ['goal', 1e9], ['rent', 1e9], ['projectCost', 1e11], ['own', 1e11], ['cash', 1e11], ['reserve', 1e11],
+    ['commitments', 1e11], ['loanAmount', 1e11]];
+  for (const [k, cap] of MONEY){
+    const v = a[k];
+    if (v === '' || v == null) continue; // unknown stays unknown
+    if (!finiteIn(v, 0, cap)) invalid.push(k + ' outside 0-' + cap.toLocaleString('en-US'));
+  }
+  if (a.rent !== '' && a.rent != null && Number(a.rent) > 0){
+    if (!missing.includes('rent') && !(Number.isInteger(Number(a.rentStart)) && Number(a.rentStart) >= 1 && Number(a.rentStart) <= 12)) invalid.push('rent start month must be 1-12');
+    if (!(Number.isInteger(Number(a.rentMonths)) && Number(a.rentMonths) >= 0 && Number(a.rentMonths) <= 12)) invalid.push('rent months must be 0-12');
+  }
+  // Dated rows: an entered amount must be finite, nonnegative and fully dated.
+  rows.forEach((r, i) => {
+    if (!r) return;
+    if ((r.amount === '' || r.amount == null) && !r.label) return; // untouched row
+    const n = i + 1;
+    if (r.amount === '' || r.amount == null) { invalid.push('dated item ' + n + ' has a label but no amount'); return; }
+    if (!finiteIn(r.amount, 0, 1e9)) invalid.push('dated item ' + n + ' amount outside 0-1,000,000,000');
+    if (!(Number.isInteger(Number(r.firstMonth)) && Number(r.firstMonth) >= 1 && Number(r.firstMonth) <= 12)) invalid.push('dated item ' + n + ' needs a first month 1-12');
+    if (r.lastMonth !== '' && r.lastMonth != null && !(Number.isInteger(Number(r.lastMonth)) && Number(r.lastMonth) >= Number(r.firstMonth) && Number(r.lastMonth) <= 12)) invalid.push('dated item ' + n + ' last month must be between its first month and 12');
+  });
+  // Life-event entries (only when that scenario is enabled): entered amounts are
+  // finite and nonnegative, entered months are whole 1-12. Documented exception:
+  // earnerDeath.expenseDelta MAY be negative (expenses can fall after a death).
+  const chkAmt = (v, name) => { if (v !== '' && v != null && !finiteIn(v, 0, 1e9)) invalid.push(name + ' outside 0-1,000,000,000'); };
+  const chkMon = (v, name) => { if (v !== '' && v != null && !(Number.isInteger(Number(v)) && Number(v) >= 1 && Number(v) <= 12)) invalid.push(name + ' must be a whole month 1-12'); };
+  if (life.jobLoss && life.jobLoss.enabled){
+    const j = life.jobLoss;
+    chkMon(j.gapStart, 'income-gap start'); chkMon(j.gapMonths === 0 ? '' : j.gapMonths, 'income-gap length');
+    if (j.gapMonths !== '' && j.gapMonths != null && !(Number.isInteger(Number(j.gapMonths)) && Number(j.gapMonths) >= 0 && Number(j.gapMonths) <= 12)) invalid.push('income-gap length must be 0-12 months');
+    chkAmt(j.severance, 'severance'); chkMon(j.severanceMonth, 'severance month');
+    chkAmt(j.relocationCost, 'relocation cost'); chkMon(j.relocationMonth, 'relocation month');
+    chkAmt(j.newIncome, 'new income'); chkMon(j.newIncomeStart, 'new income start');
+    chkAmt(j.newRecurringCost, 'new recurring cost'); chkMon(j.newCostStart, 'new cost start');
+    chkAmt(j.fxAmount, 'foreign-currency amount'); chkAmt(j.fxFee, 'FX fee'); chkMon(j.fxStart, 'FX start month');
+    if (j.fxRate !== '' && j.fxRate != null && !finiteIn(j.fxRate, 0.000001, 100000)) invalid.push('FX rate must be positive');
+  }
+  if (life.loanRejected && life.loanRejected.enabled){
+    const rj = life.loanRejected;
+    if (rj.released !== '' && rj.released != null && !finiteIn(rj.released, 0, 1e11)) invalid.push('released amount outside 0-100,000,000,000');
+  }
+  if (life.earnerDeath && life.earnerDeath.enabled){
+    const d = life.earnerDeath;
+    chkMon(d.endMonth, 'income end month');
+    if (d.expenseDelta !== '' && d.expenseDelta != null && !finiteIn(d.expenseDelta, -1e9, 1e9)) invalid.push('expense change outside +/-1,000,000,000');
+    chkAmt(d.claimAmount, 'claim amount'); chkMon(d.claimMonth, 'claim month');
+  }
   if (!missing.includes('rate') && !finiteIn(a.rate, 0, 60)) invalid.push('rate outside 0-60%');
   if (!missing.includes('years') && !(Number.isInteger(Number(a.years)) && Number(a.years) >= 1 && Number(a.years) <= 40)) invalid.push('years must be a whole number 1-40');
   const rp = stress.ratePlus === '' || stress.ratePlus == null ? 0 : Number(stress.ratePlus);
