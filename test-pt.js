@@ -95,5 +95,35 @@ const blankRate = pt.computeAll({ ...a, rate: '' }, rows, noStress, noLife);
 eq('blank rate stays unknown, not invalid', blankRate.ready === false && blankRate.missing.includes('rate') && blankRate.invalid.length === 0, true);
 eq('valid +2 stress still passes', pt.computeAll(a, rows, { ratePlus: 2, dropPct: '', dropStart: '', dropMonths: '', overrun: '' }, noLife).ready, true);
 
+// Monetary guards across ALL inputs (peer blocker: essentials -100000, own -1000000 passed)
+eq('negative essentials blocked', pt.computeAll({ ...a, essentials: -100000 }, rows, noStress, noLife).ready, false);
+eq('negative own contribution blocked', pt.computeAll({ ...a, own: -1000000 }, rows, noStress, noLife).ready, false);
+eq('negative cash blocked', pt.computeAll({ ...a, cash: -5 }, rows, noStress, noLife).ready, false);
+eq('negative reserve blocked', pt.computeAll({ ...a, reserve: -5 }, rows, noStress, noLife).ready, false);
+eq('negative loanAmount blocked', pt.computeAll({ ...a, loanAmount: -5 }, rows, noStress, noLife).ready, false);
+eq('negative debt blocked', pt.computeAll({ ...a, debt: -5 }, rows, noStress, noLife).ready, false);
+eq('negative goal blocked', pt.computeAll({ ...a, goal: -5 }, rows, noStress, noLife).ready, false);
+eq('negative rent blocked', pt.computeAll({ ...a, rent: -5 }, rows, noStress, noLife).ready, false);
+eq('negative otherIncome blocked', pt.computeAll({ ...a, otherIncome: -5 }, rows, noStress, noLife).ready, false);
+eq('negative commitments blocked', pt.computeAll({ ...a, commitments: -5 }, rows, noStress, noLife).ready, false);
+// Dated rows
+eq('negative row amount blocked', pt.computeAll(a, [{ label: 'x', amount: -100, kind: 'expense', freq: 'once', firstMonth: 2, lastMonth: '' }], noStress, noLife).ready, false);
+eq('row amount without month blocked', pt.computeAll(a, [{ label: 'x', amount: 100, kind: 'expense', freq: 'once', firstMonth: '', lastMonth: '' }], noStress, noLife).ready, false);
+eq('label without amount blocked', pt.computeAll(a, [{ label: 'x', amount: '', kind: 'expense', freq: 'once', firstMonth: 2, lastMonth: '' }], noStress, noLife).ready, false);
+// Life-event entries
+const jlBad = pt.computeAll(a, rows, noStress, { jobLoss: { enabled: true, gapStart: 2, gapMonths: 3, otherStops: false, severance: -5000, severanceMonth: 2, relocationCost: '', relocationMonth: '', newIncome: '', newIncomeStart: '', newRecurringCost: '', newCostStart: '', fxAmount: '', fxRate: '', fxFee: '', fxStart: '' }, loanRejected: { enabled: false }, earnerDeath: { enabled: false } });
+eq('negative severance blocked', jlBad.ready, false);
+const jlBad2 = pt.computeAll(a, rows, noStress, { jobLoss: { enabled: true, gapStart: 0, gapMonths: 3, otherStops: false, severance: '', severanceMonth: '', relocationCost: '', relocationMonth: '', newIncome: '', newIncomeStart: '', newRecurringCost: '', newCostStart: '', fxAmount: '', fxRate: '', fxFee: '', fxStart: '' }, loanRejected: { enabled: false }, earnerDeath: { enabled: false } });
+eq('gap start 0 blocked', jlBad2.ready, false);
+const jlFx = pt.computeAll(a, rows, noStress, { jobLoss: { enabled: true, gapStart: 2, gapMonths: 1, otherStops: false, severance: '', severanceMonth: '', relocationCost: '', relocationMonth: '', newIncome: '', newIncomeStart: '', newRecurringCost: '', newCostStart: '', fxAmount: 1000, fxRate: -22, fxFee: '', fxStart: 6 }, loanRejected: { enabled: false }, earnerDeath: { enabled: false } });
+eq('negative FX rate blocked', jlFx.ready, false);
+const rejBad = pt.computeAll(a, rows, noStress, { jobLoss: { enabled: false }, loanRejected: { enabled: true, status: 'partly', released: -100 }, earnerDeath: { enabled: false } });
+eq('negative released blocked', rejBad.ready, false);
+const edBad = pt.computeAll(a, rows, noStress, { jobLoss: { enabled: false }, loanRejected: { enabled: false }, earnerDeath: { enabled: true, endMonth: 2, otherStops: false, expenseDelta: '', claimStatus: 'received', claimAmount: -100, claimMonth: 5, coborrower: 'yes' } });
+eq('negative claim blocked', edBad.ready, false);
+// Documented negative semantics: expenseDelta MAY be negative (expenses can fall)
+const edNeg = pt.computeAll(a, rows, noStress, { jobLoss: { enabled: false }, loanRejected: { enabled: false }, earnerDeath: { enabled: true, endMonth: 2, otherStops: false, expenseDelta: -5000, claimStatus: 'none', claimAmount: '', claimMonth: '', coborrower: 'yes' } });
+eq('negative expenseDelta allowed (documented)', edNeg.ready, true);
+
 console.log(fails ? `\n${fails} FAILURES` : '\nALL PASS');
 process.exit(fails ? 1 : 0);
