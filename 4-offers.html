@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>Translate my loan offer | My Home Loan</title>
+<style>
+/* Feature-local namespaced CSS for the offer-translator page.
+   Palette mirrors style.css; this file intentionally does NOT load or edit
+   style.css, which the concept-1 work is changing. Integration: when wiring
+   this page into the tab nav, this <style> block can move into a namespaced
+   section of the shared stylesheet. */
+body{margin:0;color:#20342e;background:#f7f5ed;font:15px/1.6 'DM Sans',system-ui,sans-serif}
+.lo-topbar{display:flex;align-items:center;gap:12px;padding:14px 22px;background:#fffefa;border-bottom:1px solid #d9dfd6}
+.lo-mark{font-size:22px;color:#274e3c}
+.lo-brand{font-weight:800;color:#274e3c;text-decoration:none;letter-spacing:.4px}
+.lo-brand span{display:block;font-size:10px;font-weight:700;color:#65776f;letter-spacing:1.5px}
+.lo-chip{margin-left:auto;font-size:12px;color:#65776f;border:1px solid #d9dfd6;border-radius:20px;padding:4px 10px}
+.lo-wrap{max-width:960px;margin:0 auto;padding:22px}
+.lo-eyebrow{font-size:11px;font-weight:800;letter-spacing:1.5px;color:#65776f}
+.lo-panel{background:#fffefa;border:1px solid #e0e7de;border-radius:14px;padding:23px;margin-top:18px}
+.lo-panel h2{margin-top:0}
+.lo-hint{color:#65776f;font-size:13.5px}
+.lo-btn,.lo-choices button,.lo-flags button,#lo-path button{border:1px solid #b9d0bb;border-radius:8px;padding:9px 13px;background:#fffefa;color:#274e3c;font-weight:800;cursor:pointer;font:inherit}
+.lo-btn-primary{background:#274e3c !important;color:#fff !important;border-color:#274e3c !important}
+.lo-choices button.selected,#lo-path button.selected,.lo-flags button.selected{background:#274e3c;color:#fff;border-color:#274e3c}
+.lo-tabs{display:flex;gap:8px;margin:14px 0}
+.lo-tabs button{flex:1}
+.lo-actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.lo-qrow{border-top:1px dashed #d9dfd6;padding:14px 0}
+.lo-qrow input{display:block;width:100%;box-sizing:border-box;padding:10px;border:1px solid #aaa;border-radius:6px;margin-top:8px;min-height:44px;font:inherit}
+.lo-qhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.lo-flags{display:flex;gap:6px}
+.lo-flags button{font-size:12px;padding:6px 10px}
+.lo-flags .lo-clear{border-color:#d9b8b8;color:#8a3b3b}
+.lo-draw,.lo-fee{display:grid;grid-template-columns:1.2fr 1fr .9fr .9fr .8fr auto;gap:8px;margin-top:8px;align-items:center}
+.lo-fee{grid-template-columns:1.4fr 1fr auto auto auto}
+.lo-draw input,.lo-draw select,.lo-fee input{padding:9px;border:1px solid #aaa;border-radius:6px;min-height:44px;font:inherit;width:100%;box-sizing:border-box}
+.lo-fee label{display:flex;gap:6px;align-items:center;font-size:13px}
+.lo-del{border:1px solid #d9b8b8;background:#fff;color:#8a3b3b;border-radius:8px;padding:9px 12px;cursor:pointer;font:inherit}
+.lo-check{display:flex;gap:8px;align-items:center;margin-top:8px;font-weight:600}
+.lo-check input{width:20px;height:20px;min-height:0}
+.lo-alert{background:#fdf0e8;border:1px solid #d38251;border-radius:10px;padding:12px 14px;color:#7a4322;margin-top:12px}
+.lo-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.lo-card{padding:15px;border:1px solid #e0e7de;border-radius:12px;background:#fff}
+.lo-card h4{margin:0 0 6px;font-size:13px;color:#65776f}
+.lo-card .pt-big{margin:0;font-size:19px;font-weight:800;color:#20342e}
+.lo-card small{color:#65776f}
+.lo-notes{background:#f4f8f1;border:1px solid #c3d8c4;border-radius:10px;padding:12px 14px;margin-top:12px}
+.lo-notes li{margin:4px 0}
+.lo-startrow{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+.lo-startrow input{padding:9px;border:1px solid #aaa;border-radius:6px;min-height:44px;font:inherit}
+.lo-footer{display:flex;justify-content:space-between;padding:22px;color:#65776f;font-size:13px}
+@media(max-width:700px){.lo-cards{grid-template-columns:1fr}.lo-draw,.lo-fee{grid-template-columns:1fr 1fr}.lo-wrap{padding:14px}}
+</style></head>
+<body>
+<header class="lo-topbar"><span class="lo-mark" aria-hidden="true">⌂</span><a class="lo-brand" href="index.html">MY HOME LOAN<span>PLAN · TRACK · DECIDE</span></a><span class="lo-chip">Local-first · nothing leaves this browser</span></header>
+<main class="lo-wrap" id="lo-app">
+  <div class="lo-eyebrow">CONCEPT 3 · OFFER WORKSPACE</div>
+  <h1>Translate my loan offer</h1>
+  <p class="lo-hint">Break a loan offer into plain parts, see exactly what is still unknown, and compare two offers on the same assumptions. Entries stay in this browser (local storage only). It is not an OCR or import tool, and it never overwrites your main plan. Unknown means unknown: an unanswered cost is excluded from totals with a visible note, never treated as zero. Not financial advice.</p>
+  <div class="lo-actions"><button class="lo-btn lo-btn-primary" id="lo-fictional" type="button">Load a fictional offer</button><button class="lo-btn" id="lo-clear" type="button">Clear both offers</button></div>
+
+  <div class="lo-tabs" role="group" aria-label="Choose offer">
+    <button class="lo-btn selected" id="lo-tab-a" type="button">Offer A</button>
+    <button class="lo-btn" id="lo-tab-b" type="button">Offer B</button>
+  </div>
+
+  <section class="lo-panel">
+    <h2><input id="lo-offer-label" type="text" value="Offer A" aria-label="Offer name" style="font:inherit;font-weight:800;border:1px solid #d9dfd6;border-radius:8px;padding:6px 10px"></h2>
+    <p class="lo-hint">Where are you with this loan?</p>
+    <div class="lo-choices" id="lo-path"></div>
+    <div id="lo-offer-body"></div>
+    <div id="lo-errors"></div>
+  </section>
+
+  <section class="lo-panel" id="lo-checklist-panel"><h2>Bank-question checklist</h2><div id="lo-checklist"></div></section>
+
+  <section class="lo-panel"><h2>Compare the two offers</h2>
+    <div class="lo-startrow"><label for="lo-start"><strong>Comparison starts in month</strong></label><input id="lo-start" type="month" value="2027-01"><span class="lo-hint">Both offers are modeled over the same 12 months from this month.</span></div>
+    <div id="lo-compare"></div></section>
+</main>
+<footer class="lo-footer"><span>MY HOME LOAN</span><span>A planning sketch, not financial advice. Check estimates against your lender's statement.</span></footer>
+<script src="offers.js" defer></script>
+</body></html>
