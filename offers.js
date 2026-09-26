@@ -92,13 +92,20 @@ function validateOffer(offer){
 // A draw raises interest only from its ACTUAL release date; planned/requested draws
 // add nothing until received. Dates are YYYY-MM; month m maps to an entered start month.
 function monthlyOutflow(offer, startYearMonth, m){
+  // A blank rate is unknown, never 0%: Number('') === 0 would silently model a
+  // free loan and let a blank offer show (and rank) as zero.
+  if (offer.nominalPct === '' || offer.nominalPct == null) return { outflow: null, balance: null, note: 'rate unknown' };
   const rate = Number(offer.nominalPct);
   if (!Number.isFinite(rate)) return { outflow: null, balance: null, note: 'rate unknown' };
   const drawn = releasedDrawsUpTo(offer, startYearMonth, m);
   const drawnTotal = drawn.reduce((s, d) => s + toPaise(d.amount), 0);
+  // Nothing actually released: there is no debt yet and no EMI has started.
+  // Modeling a full EMI on the sanctioned amount here would invent outflow and
+  // debt; unknown is the honest answer and it must never rank as a cheap zero.
+  if (drawnTotal === 0) return { outflow: null, balance: 0, note: 'nothing released yet' };
   const fullyDrawn = offer.amount !== '' && drawnTotal >= toPaise(offer.amount);
   if (offer.preEmiMode === 'interestOnly' && !fullyDrawn){
-    return { outflow: preEmiInterestPaise(drawnTotal, rate), balance: drawnTotal, note: drawnTotal ? 'pre-EMI interest on released amount' : 'nothing released yet' };
+    return { outflow: preEmiInterestPaise(drawnTotal, rate), balance: drawnTotal, note: 'pre-EMI interest on released amount' };
   }
   const basis = offer.preEmiMode === 'interestOnly' ? drawnTotal : (toPaise(offer.amount) || drawnTotal);
   const emi = emiPaise(basis, rate, Number(offer.termMonths));
@@ -114,15 +121,16 @@ function monthlyOutflow(offer, startYearMonth, m){
 }
 
 function releasedDrawsUpTo(offer, startYearMonth, m){
-  // Only draws with an actual release date within the window count.
+  // Draws with an actual release date up to month m count - INCLUDING releases
+  // before the comparison start: an earlier release is existing debt and its
+  // interest/EMI does not vanish when the window opens later.
   const [sy, sm] = (startYearMonth || '2027-01').split('-').map(Number);
-  const limit = sy * 12 + (sm - 1) + m; // exclusive-ish: months 1..m
+  const limit = sy * 12 + (sm - 1) + m; // months 1..m inclusive
   return offer.draws.filter(d => {
     if (d.status !== 'released' || !d.actualDate) return false;
     const [y, mo] = d.actualDate.split('-').map(Number);
     if (!y || !mo) return false;
-    const idx = y * 12 + (mo - 1);
-    return idx >= sy * 12 + (sm - 1) && idx < limit;
+    return y * 12 + (mo - 1) < limit;
   });
 }
 
@@ -136,13 +144,25 @@ function knownFees(offer){
 function compareOffers(a, b, startYearMonth){
   const months = [];
   for (let m = 1; m <= 12; m++) months.push(m);
-  const sum = (offer) => months.reduce((s, m) => { const o = monthlyOutflow(offer, startYearMonth, m).outflow; return o == null ? s : s + o; }, 0);
+  // A year total exists only when EVERY month is modeled. Any unknown month makes
+  // the year unknown too: an invalid or blank offer must never show or rank as zero.
+  const sum = (offer) => {
+    let total = 0;
+    for (const m of months){
+      const o = monthlyOutflow(offer, startYearMonth, m).outflow;
+      if (o == null) return null;
+      total += o;
+    }
+    return total;
+  };
   const fa = knownFees(a), fb = knownFees(b);
   const rowsOut = {
     a: { outflowYear: sum(a), balanceEnd: monthlyOutflow(a, startYearMonth, 12).balance, fees: fa, provisional: provisionalReasons(a) },
     b: { outflowYear: sum(b), balanceEnd: monthlyOutflow(b, startYearMonth, 12).balance, fees: fb, provisional: provisionalReasons(b) },
     warnings: [],
   };
+  if (rowsOut.a.outflowYear == null) rowsOut.warnings.push('Offer A year-one outflow is unknown (missing rate, term, or no released draw yet). Unknown is never zero, so it cannot be ranked cheaper.');
+  if (rowsOut.b.outflowYear == null) rowsOut.warnings.push('Offer B year-one outflow is unknown (missing rate, term, or no released draw yet). Unknown is never zero, so it cannot be ranked cheaper.');
   if (fa.unknown.length) rowsOut.warnings.push('Offer A total excludes unknown fee(s): ' + fa.unknown.join(', ') + '. It is not treated as zero.');
   if (fb.unknown.length) rowsOut.warnings.push('Offer B total excludes unknown fee(s): ' + fb.unknown.join(', ') + '. It is not treated as zero.');
   if ((a.draws.length > 1 || b.draws.length > 1)) rowsOut.warnings.push('Staged draws make a simple EMI comparison misleading; the month-by-month view is the honest one.');
