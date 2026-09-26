@@ -160,14 +160,19 @@ const MHLPlanHistory = (function(){
 
   // Two-tab safety: call BEFORE saving. If the plan key changed since this tab's
   // base, the app must ask which changes to keep (never last-write-wins).
+  // Fail CLOSED: only a proven hash match returns ok:true. A missing, unreadable
+  // or changed stored plan - or a missing base hash - all return ok:false, so the
+  // app can never treat an unverified base as safe to save over.
   function checkBaseRevision(tabBaseHash){
     if (!ready()) return { ok: false, error: 'not-wired' };
+    if (typeof tabBaseHash !== 'string' || !tabBaseHash) return { ok: false, error: 'no-base-hash' };
     let currentRaw = null;
-    try{ currentRaw = localStorage.getItem(cfg.planStorageKey); }catch{}
-    if (!currentRaw) return { ok: true, state: 'no-stored-plan' };
+    try{ currentRaw = localStorage.getItem(cfg.planStorageKey); }catch{ return { ok: false, error: 'storage-unreadable' }; }
+    if (!currentRaw) return { ok: false, state: 'no-stored-plan', error: 'no-stored-plan' };
     let currentHash = null;
-    try{ currentHash = planHash(JSON.parse(currentRaw)); }catch{ return { ok: true, state: 'stored-plan-unreadable' }; }
-    return { ok: true, state: currentHash === tabBaseHash ? 'clean' : 'conflict', currentHash };
+    try{ currentHash = planHash(JSON.parse(currentRaw)); }catch{ return { ok: false, state: 'stored-plan-unreadable', error: 'stored-plan-corrupt' }; }
+    if (currentHash === tabBaseHash) return { ok: true, state: 'clean', currentHash };
+    return { ok: false, state: 'conflict', currentHash, error: 'conflict' };
   }
 
   const api = { HIST_KEY, MAX_SNAPSHOTS, init, ready, captureSnapshot, digest, compare, restorePreview, checkBaseRevision,
