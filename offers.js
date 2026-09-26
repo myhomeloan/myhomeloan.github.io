@@ -97,27 +97,48 @@ function monthlyOutflow(offer, startYearMonth, m){
   if (offer.nominalPct === '' || offer.nominalPct == null) return { outflow: null, balance: null, note: 'rate unknown' };
   const rate = Number(offer.nominalPct);
   if (!Number.isFinite(rate)) return { outflow: null, balance: null, note: 'rate unknown' };
+  if (rate < 0 || rate > 100) return { outflow: null, balance: null, note: 'rate outside 0-100%' };
+  const [sy, sm] = (startYearMonth || '2027-01').split('-').map(Number);
+  const winStart = sy * 12 + (sm - 1);
+  const anyRelease = offer.draws.some(d => d.status === 'released' && d.actualDate && d.actualDate.split('-').map(Number)[0]);
   const drawn = releasedDrawsUpTo(offer, startYearMonth, m);
   const drawnTotal = drawn.reduce((s, d) => s + toPaise(d.amount), 0);
-  // Nothing actually released: there is no debt yet and no EMI has started.
-  // Modeling a full EMI on the sanctioned amount here would invent outflow and
-  // debt; unknown is the honest answer and it must never rank as a cheap zero.
-  if (drawnTotal === 0) return { outflow: null, balance: 0, note: 'nothing released yet' };
+  if (drawnTotal === 0){
+    // No release anywhere: unknown, never zero - nothing can be modeled.
+    if (!anyRelease) return { outflow: null, balance: 0, note: 'nothing released yet' };
+    // Releases exist but start later: this month has no debt and no EMI due.
+    // Zero is the truth for THIS month (unlike the never-released case).
+    return { outflow: 0, balance: 0, note: 'no release yet this month' };
+  }
   const fullyDrawn = offer.amount !== '' && drawnTotal >= toPaise(offer.amount);
   if (offer.preEmiMode === 'interestOnly' && !fullyDrawn){
     return { outflow: preEmiInterestPaise(drawnTotal, rate), balance: drawnTotal, note: 'pre-EMI interest on released amount' };
   }
-  const basis = offer.preEmiMode === 'interestOnly' ? drawnTotal : (toPaise(offer.amount) || drawnTotal);
-  const emi = emiPaise(basis, rate, Number(offer.termMonths));
+  // Full-EMI mode: only RELEASED debt exists. The EMI basis is the released
+  // amount, never the sanction - a partial release cannot carry a full-sanction
+  // EMI or balance. Repayment and balance roll forward from each ACTUAL release
+  // date: a release before the comparison window accrues its pre-window interest
+  // and EMIs first, so the window opens on the true outstanding balance.
+  const term = Number(offer.termMonths);
+  const emi = emiPaise(drawnTotal, rate, term);
   if (emi == null) return { outflow: null, balance: drawnTotal, note: 'term unknown' };
-  // Balance after m EMIs on the full basis (annuity roll-forward, paise).
-  let bal = basis;
-  const i = rate / 1200;
-  for (let k = 1; k <= m && bal > 0; k++){
-    const interest = Math.floor(bal * i + 0.5);
-    bal = Math.max(0, bal + interest - emi);
+  const monthlyRate = rate / 1200;
+  const firstIdx = Math.min(...drawn.map(d => { const [y, mo] = d.actualDate.split('-').map(Number); return y * 12 + (mo - 1); }));
+  let bal = 0, prevDrawnP = 0, outflowM = emi, paidOff = false;
+  for (let idx = firstIdx; idx < winStart + m; idx++){
+    const drawnP = releasedDrawsUpTo(offer, startYearMonth, idx - winStart + 1).reduce((s2, d) => s2 + toPaise(d.amount), 0);
+    const newRelease = drawnP - prevDrawnP;
+    if (idx === winStart + m - 1 && bal === 0 && newRelease === 0){ paidOff = true; outflowM = 0; } // loan already repaid before this month
+    bal += newRelease; // a new release joins the principal in its own month
+    prevDrawnP = drawnP;
+    const emiK = emiPaise(drawnP, rate, term);
+    if (emiK != null && bal > 0){
+      const interest = Math.floor(bal * monthlyRate + 0.5);
+      bal = Math.max(0, bal + interest - emiK);
+    }
   }
-  return { outflow: emi, balance: bal, note: 'modeled EMI' };
+  const note = paidOff ? 'paid off before this month' : (drawnTotal < (toPaise(offer.amount) || 0) ? 'modeled EMI on released amount only' : 'modeled EMI');
+  return { outflow: outflowM, balance: bal, note };
 }
 
 function releasedDrawsUpTo(offer, startYearMonth, m){
@@ -135,9 +156,12 @@ function releasedDrawsUpTo(offer, startYearMonth, m){
 }
 
 function knownFees(offer){
-  const cash = offer.fees.filter(f => f.known && !f.financed).reduce((s, f) => s + toPaise(f.amount), 0);
-  const financed = offer.fees.filter(f => f.known && f.financed).reduce((s, f) => s + toPaise(f.amount), 0);
-  const unknown = offer.fees.filter(f => !f.known).map(f => f.label || 'unnamed fee');
+  // A fee marked known but entered without an amount is NOT zero: Number('')
+  // would silently make it 0. It joins the unknown list, loudly.
+  const usable = f => f.known && f.amount !== '' && f.amount != null && Number.isFinite(Number(f.amount));
+  const cash = offer.fees.filter(f => usable(f) && !f.financed).reduce((s, f) => s + toPaise(f.amount), 0);
+  const financed = offer.fees.filter(f => usable(f) && f.financed).reduce((s, f) => s + toPaise(f.amount), 0);
+  const unknown = offer.fees.filter(f => !usable(f)).map(f => (f.label || 'unnamed fee') + (f.known ? ' (marked known but no amount entered)' : ''));
   return { cash, financed, unknown };
 }
 
@@ -156,11 +180,18 @@ function compareOffers(a, b, startYearMonth){
     return total;
   };
   const fa = knownFees(a), fb = knownFees(b);
-  const rowsOut = {
-    a: { outflowYear: sum(a), balanceEnd: monthlyOutflow(a, startYearMonth, 12).balance, fees: fa, provisional: provisionalReasons(a) },
-    b: { outflowYear: sum(b), balanceEnd: monthlyOutflow(b, startYearMonth, 12).balance, fees: fb, provisional: provisionalReasons(b) },
-    warnings: [],
-  };
+  const va = validateOffer(a), vb = validateOffer(b);
+  // An offer that fails validation (e.g. an impossible rate) is EXCLUDED from
+  // the numeric comparison: its figures are unknown, its errors are listed, and
+  // it can never rank on numbers it failed to validate.
+  const side = (offer, fees, errs) => ({
+    outflowYear: errs.length ? null : sum(offer),
+    balanceEnd: errs.length ? null : monthlyOutflow(offer, startYearMonth, 12).balance,
+    fees, provisional: provisionalReasons(offer), errors: errs,
+  });
+  const rowsOut = { a: side(a, fa, va), b: side(b, fb, vb), warnings: [] };
+  if (va.length) rowsOut.warnings.push('Offer A fails validation (' + va.join(' ') + ') and is excluded from the numeric comparison.');
+  if (vb.length) rowsOut.warnings.push('Offer B fails validation (' + vb.join(' ') + ') and is excluded from the numeric comparison.');
   if (rowsOut.a.outflowYear == null) rowsOut.warnings.push('Offer A year-one outflow is unknown (missing rate, term, or no released draw yet). Unknown is never zero, so it cannot be ranked cheaper.');
   if (rowsOut.b.outflowYear == null) rowsOut.warnings.push('Offer B year-one outflow is unknown (missing rate, term, or no released draw yet). Unknown is never zero, so it cannot be ranked cheaper.');
   if (fa.unknown.length) rowsOut.warnings.push('Offer A total excludes unknown fee(s): ' + fa.unknown.join(', ') + '. It is not treated as zero.');
@@ -289,6 +320,7 @@ if (typeof document !== 'undefined') (function(){
     const res = compareOffers(a, b, startYM);
     const col = (name, r, o) => `<div class="lo-card"><h4>${esc(name)}${r.provisional.length ? ' · provisional (' + esc(r.provisional.join(', ')) + ')' : ''}</h4>
       <p class="pt-big">${moneyOr(r.outflowYear)}</p><small>modeled year-one outflow (EMI / pre-EMI interest only)</small>
+      ${r.errors && r.errors.length ? '<ul class="lo-err">' + r.errors.map(e => `<li>${esc(e)}</li>`).join('') + '</ul>' : ''}
       <p><strong>Balance after month 12:</strong> ${moneyOr(r.balanceEnd)}<br>
       <strong>Known fees, cash:</strong> ${fmt(r.fees.cash)} · <strong>financed:</strong> ${fmt(r.fees.financed)}${r.fees.unknown.length ? '<br><strong>Excluded unknown fee(s):</strong> ' + esc(r.fees.unknown.join(', ')) : ''}<br>
       <strong>KFS APR (quoted separately):</strong> ${o.kfsAprPct !== '' && o.kfsAprPct != null ? esc(o.kfsAprPct) + '%' : 'not entered'}</p></div>`;
