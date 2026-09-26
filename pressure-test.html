@@ -30,7 +30,7 @@ body{margin:0;color:#20342e;background:#f7f5ed;font:15px/1.6 'DM Sans',system-ui
 .pt-btn-primary{background:#274e3c !important;color:#fff !important;border-color:#274e3c !important}
 .pt-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
 .pt-row{display:grid;grid-template-columns:1.4fr 1fr .9fr .9fr .8fr auto;gap:8px;margin-top:8px;align-items:center}
-.pt-row input,.pt-row select{padding:9px;border:1px solid #aaa;border-radius:6px;min-height:44px;font:inherit;width:100%;box-sizing:border-box}
+.pt-row input,.pt-row select{padding:9px;border:1px solid #aaa;border-radius:6px;min-height:44px;font:inherit;width:100%;min-width:0;box-sizing:border-box}
 .pt-row .ghost{border:1px solid #d9b8b8;background:#fff;color:#8a3b3b;border-radius:8px;padding:9px 12px;cursor:pointer}
 .pt-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:14px 0}
 .pt-card{padding:15px;border:1px solid #e0e7de;border-radius:12px;background:#fff}
@@ -47,12 +47,12 @@ body{margin:0;color:#20342e;background:#f7f5ed;font:15px/1.6 'DM Sans',system-ui
 .pt-table tr.pt-neg td{color:#8a3b3b;font-weight:700}
 .pt-sub{border-top:1px dashed #d9dfd6;margin-top:14px;padding-top:10px}
 .pt-fx{border:1px solid #e0e7de;border-radius:10px;padding:12px;margin-top:12px;background:#fbfaf5}
-.pt-range{display:flex;align-items:center;gap:12px;margin-top:10px}
-.pt-range input{flex:1;min-height:44px}
+.pt-range{display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap}
+.pt-range input{flex:1;min-width:0;min-height:44px}
 .pt-range strong{white-space:nowrap}
 .pt-footer{display:flex;justify-content:space-between;padding:22px;color:#65776f;font-size:13px}
 .pt-stress-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:12px}
-@media(max-width:700px){.pt-fields,.pt-stress-grid{grid-template-columns:1fr}.pt-cards{grid-template-columns:1fr 1fr}.pt-row{grid-template-columns:1fr 1fr}.pt-wrap{padding:14px}}
+@media(max-width:700px){.pt-fields,.pt-stress-grid{grid-template-columns:1fr}.pt-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.pt-row{grid-template-columns:repeat(2,minmax(0,1fr))}.pt-wrap{padding:14px}}
 </style></head>
 <body class="pt-root">
 <header class="pt-topbar"><span class="pt-mark" aria-hidden="true">⌂</span><a class="pt-brand" href="index.html">MY HOME LOAN<span>PLAN · TRACK · DECIDE</span></a><span class="pt-chip">Local-first · nothing leaves this browser</span></header>
