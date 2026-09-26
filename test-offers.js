@@ -13,7 +13,10 @@ eq('month-1 balance 1,105,381.45', of.fromPaise(m1.balance), 1105381.45);
 // Approval with no actual release -> zero drawn-principal interest
 const B = { label: 'B', amount: 300000, rateType: 'fixed', nominalPct: 12, termMonths: 36, preEmiMode: 'interestOnly',
   draws: [{ label: 'first', amount: 300000, plannedDate: '2027-02', actualDate: '', status: 'requested' }], fees: [], fieldStatus: {} };
-eq('no release -> 0 interest', of.fromPaise(of.monthlyOutflow(B, '2027-01', 2).outflow), 0);
+const bOut = of.monthlyOutflow(B, '2027-01', 2);
+eq('no release -> unknown outflow (never zero)', bOut.outflow, null);
+eq('no release -> no debt', bOut.balance, 0);
+eq('no release -> note', bOut.note, 'nothing released yet');
 
 // 600,000 first release @12% interestOnly -> 6,000 pre-EMI interest
 const C = { label: 'C', amount: 1200000, rateType: 'fixed', nominalPct: 12, termMonths: 12, preEmiMode: 'interestOnly',
@@ -45,6 +48,35 @@ eq('unentered fields listed', qs.some(q => q.field === 'termMonths' && q.prompt.
 
 // Provisional marking
 eq('floating without reset is provisional', of.provisionalReasons({ ...A, rateType: 'floating', resetDate: '' }).includes('no reset date'), true);
+
+// Full-EMI mode with zero released draws must not invent outflow or debt
+const F = { label: 'F', amount: 500000, rateType: 'fixed', nominalPct: 10, termMonths: 24, preEmiMode: 'emi', draws: [], fees: [], fieldStatus: {} };
+const fOut = of.monthlyOutflow(F, '2027-01', 1);
+eq('full EMI, no draws -> outflow unknown', fOut.outflow, null);
+eq('full EMI, no draws -> balance zero (no debt)', fOut.balance, 0);
+eq('full EMI, no draws -> note', fOut.note, 'nothing released yet');
+
+// Releases BEFORE the comparison start still count (existing debt)
+const G = { label: 'G', amount: 1200000, rateType: 'fixed', nominalPct: 12, termMonths: 12, preEmiMode: 'interestOnly',
+  draws: [{ label: 'old', amount: 600000, plannedDate: '2026-11', actualDate: '2026-11', status: 'released' }], fees: [], fieldStatus: {} };
+eq('release before window start counts', of.fromPaise(of.monthlyOutflow(G, '2027-01', 1).outflow), 6000);
+
+// Blank/invalid offer: year and balance unknown, never shown or ranked as zero
+const blank = { label: 'Blank', amount: '', rateType: '', nominalPct: '', benchmark: '', spreadPct: '', resetDate: '', termMonths: '', preEmiMode: '', draws: [], fees: [], prepaymentKnown: false, insuranceKnown: false, kfsAprPct: '', fieldStatus: {} };
+const cmp2 = of.compareOffers(A, blank, '2027-01');
+eq('blank offer year is unknown not zero', cmp2.b.outflowYear, null);
+eq('blank offer balance unknown', cmp2.b.balanceEnd, null);
+eq('blank offer warning present', cmp2.warnings.some(w => w.includes('Offer B year-one outflow is unknown')), true);
+eq('valid offer still totals 12,79,422.60', of.fromPaise(cmp2.a.outflowYear), 1279422.60);
+eq('valid offer balance after 12 is zero', cmp2.a.balanceEnd, 0);
+// Partial data (rate but no draws) also stays unknown across the year
+const cmp3 = of.compareOffers(A, F, '2027-01');
+eq('no-draw offer year unknown', cmp3.b.outflowYear, null);
+
+// Blank rate with released draws: Number('') === 0 must not model a free loan
+const H2 = { label: 'H', amount: 1200000, rateType: 'fixed', nominalPct: '', termMonths: 12, preEmiMode: 'emi',
+  draws: [{ label: 'full', amount: 1200000, plannedDate: '2027-01', actualDate: '2027-01', status: 'released' }], fees: [], fieldStatus: {} };
+eq('blank rate -> unknown even with draws', of.monthlyOutflow(H2, '2027-01', 1).outflow, null);
 
 console.log(fails ? `\n${fails} FAILURES` : '\nALL PASS');
 process.exit(fails ? 1 : 0);
