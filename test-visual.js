@@ -31,7 +31,9 @@ if (of){
 if (ofjs){
   // Blank-offer contract: unknown, never zero.
   eq('blank rate is unknown not zero', /Number\(''\) === 0 would silently model/.test(ofjs), true);
-  eq('no released draws -> unknown outflow', /if \(drawnTotal === 0\) return \{ outflow: null/.test(ofjs), true);
+  eq('never-released offer -> unknown outflow', /if \(!anyRelease\) return \{ outflow: null/.test(ofjs), true);
+  eq('invalid offer excluded from comparison', /side = \(offer, fees, errs\)/.test(ofjs) && /errs\.length \? null : sum\(offer\)/.test(ofjs), true);
+  eq('known fee blank amount is unknown', /marked known but no amount entered/.test(ofjs), true);
   eq('year unknown when any month unknown', /if \(o == null\) return null/.test(ofjs), true);
 } else console.log('skip offers js guards (file not on this branch)');
 
