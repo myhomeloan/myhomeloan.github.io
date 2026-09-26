@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>Pressure-test your home plan | My Home Loan</title>
+<style>
+/* Feature-local namespaced CSS for the affordability pressure-test page.
+   Palette mirrors style.css; this file intentionally does NOT load or edit
+   style.css, which the concept-1 work is changing. Integration: when wiring
+   this page into the tab nav, this <style> block can move into a namespaced
+   section of the shared stylesheet. */
+.pt-root{--ink:#20342e;--muted:#65776f;--sage:#dce7d9;--cream:#f7f5ed;--green:#274e3c;--lime:#e6edc7;--line:#d9dfd6;--paper:#fffefa;--orange:#d38251}
+body{margin:0;color:#20342e;background:#f7f5ed;font:15px/1.6 'DM Sans',system-ui,sans-serif}
+.pt-topbar{display:flex;align-items:center;gap:12px;padding:14px 22px;background:#fffefa;border-bottom:1px solid #d9dfd6}
+.pt-mark{font-size:22px;color:#274e3c}
+.pt-brand{font-weight:800;color:#274e3c;text-decoration:none;letter-spacing:.4px}
+.pt-brand span{display:block;font-size:10px;font-weight:700;color:#65776f;letter-spacing:1.5px}
+.pt-chip{margin-left:auto;font-size:12px;color:#65776f;border:1px solid #d9dfd6;border-radius:20px;padding:4px 10px}
+.pt-wrap{max-width:960px;margin:0 auto;padding:22px}
+.pt-eyebrow{font-size:11px;font-weight:800;letter-spacing:1.5px;color:#65776f}
+.pt-panel{background:#fffefa;border:1px solid #e0e7de;border-radius:14px;padding:23px;margin-top:18px}
+.pt-panel h2{margin-top:0}
+.pt-panel h3{margin-bottom:6px}
+.pt-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:12px}
+.pt-field{display:block;font-weight:600}
+.pt-field input{display:block;width:100%;box-sizing:border-box;padding:10px;border:1px solid #aaa;border-radius:6px;margin-top:5px;min-height:44px;font:inherit}
+.pt-field small{display:block;font-weight:400}
+.pt-check{display:flex;gap:8px;align-items:center;margin:10px 0;font-weight:600}
+.pt-check input{width:20px;height:20px}
+.pt-choices{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.pt-choices button,.pt-root button.pt-btn{border:1px solid #b9d0bb;border-radius:8px;padding:10px 14px;background:#fffefa;color:#274e3c;font-weight:800;cursor:pointer;font:inherit}
+.pt-choices button.selected{background:#274e3c;color:#fff;border-color:#274e3c}
+.pt-btn-primary{background:#274e3c !important;color:#fff !important;border-color:#274e3c !important}
+.pt-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.pt-row{display:grid;grid-template-columns:1.4fr 1fr .9fr .9fr .8fr auto;gap:8px;margin-top:8px;align-items:center}
+.pt-row input,.pt-row select{padding:9px;border:1px solid #aaa;border-radius:6px;min-height:44px;font:inherit;width:100%;min-width:0;box-sizing:border-box}
+.pt-row .ghost{border:1px solid #d9b8b8;background:#fff;color:#8a3b3b;border-radius:8px;padding:9px 12px;cursor:pointer}
+.pt-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:14px 0}
+.pt-card{padding:15px;border:1px solid #e0e7de;border-radius:12px;background:#fff}
+.pt-card h4{margin:0 0 6px;font-size:13px;color:#65776f}
+.pt-card .pt-big{margin:0;font-size:19px;font-weight:800;color:#20342e}
+.pt-card small{color:#65776f}
+.pt-alert{background:#fdf0e8;border:1px solid #d38251;border-radius:10px;padding:12px 14px;color:#7a4322}
+.pt-hint{color:#65776f;font-size:13.5px}
+.pt-notes{background:#f4f8f1;border:1px solid #c3d8c4;border-radius:10px;padding:12px 14px;margin-top:12px}
+.pt-notes li{margin:4px 0}
+.pt-table-wrap{overflow-x:auto}
+.pt-table{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px}
+.pt-table th,.pt-table td{border-bottom:1px solid #e0e7de;padding:8px 10px;text-align:left}
+.pt-table tr.pt-neg td{color:#8a3b3b;font-weight:700}
+.pt-sub{border-top:1px dashed #d9dfd6;margin-top:14px;padding-top:10px}
+.pt-fx{border:1px solid #e0e7de;border-radius:10px;padding:12px;margin-top:12px;background:#fbfaf5}
+.pt-range{display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap}
+.pt-range input{flex:1;min-width:0;min-height:44px}
+.pt-range strong{white-space:nowrap}
+.pt-footer{display:flex;justify-content:space-between;padding:22px;color:#65776f;font-size:13px}
+.pt-stress-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:12px}
+@media(max-width:700px){.pt-fields,.pt-stress-grid{grid-template-columns:1fr}.pt-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.pt-row{grid-template-columns:repeat(2,minmax(0,1fr))}.pt-wrap{padding:14px}}
+</style></head>
+<body class="pt-root">
+<header class="pt-topbar"><span class="pt-mark" aria-hidden="true">⌂</span><a class="pt-brand" href="index.html">MY HOME LOAN<span>PLAN · TRACK · DECIDE</span></a><span class="pt-chip">Local-first · nothing leaves this browser</span></header>
+<main class="pt-wrap" id="pt-app">
+  <div class="pt-eyebrow">WHAT-IF SKETCH</div>
+  <h1>Pressure-test your home plan</h1>
+  <p class="pt-hint">See the average month and the month that gets tight, then stress the plan: a higher rate, an income drop, a cost overrun, or a life event. Everything is computed from what you type, stays in this browser, and uses invented-example figures only when you ask for them. A blank answer is unknown, never zero. This is not a lender statement, a risk probability, or financial, insurance or legal advice.</p>
+  <div class="pt-actions"><button class="pt-btn pt-btn-primary" id="pt-fictional" type="button">Try the fictional example</button><button class="pt-btn" id="pt-reset" type="button">Clear everything</button></div>
+
+  <section class="pt-panel"><h2>1 · Your regular month</h2>
+    <p class="pt-hint">Regular monthly amounts only. Annual, quarterly and one-off items go in section 3.</p>
+    <div class="pt-fields" id="pt-base-fields"></div></section>
+
+  <section class="pt-panel"><h2>2 · Home, cash and loan</h2>
+    <p class="pt-hint">Settled cash means money actually in your accounts. A loan the lender has not released is not settled cash; it still counts as the funding source you are planning around.</p>
+    <div class="pt-fields" id="pt-home-fields"></div>
+    <div class="pt-fields" id="pt-rent-fields"></div></section>
+
+  <section class="pt-panel"><h2>3 · Dated income and bills</h2>
+    <p class="pt-hint">A lumpy month is never averaged away: each item lands in its real month inside the 12-month view.</p>
+    <div id="pt-rows"></div>
+    <div class="pt-actions"><button class="pt-btn" id="pt-add-row" type="button">Add a dated item</button></div></section>
+
+  <section class="pt-panel"><h2>4 · Pressure tests</h2>
+    <p class="pt-hint">These change the what-if view only. Your baseline inputs are never rewritten.</p>
+    <div class="pt-range"><label for="pt-ratePlus"><strong>Higher-rate test</strong></label><input id="pt-ratePlus" type="range" min="0" max="3" step="1" value="0"><strong id="pt-ratePlus-val">+0 points</strong></div>
+    <div class="pt-stress-grid">
+      <label class="pt-field">Income drop (%)<input id="pt-dropPct" type="number" min="0" max="100" step="any" inputmode="decimal" placeholder="0-100"></label>
+      <label class="pt-field">Drop starts in month (1-12)<input id="pt-dropStart" type="number" min="1" max="12" step="1" placeholder="1-12"></label>
+      <label class="pt-field">Drop lasts (whole months, 0-12)<input id="pt-dropMonths" type="number" min="0" max="12" step="1" placeholder="0-12"></label>
+      <label class="pt-field">Extra project cost (₹)<input id="pt-overrun" type="number" min="0" step="any" inputmode="decimal" placeholder="0"><small class="pt-hint">Raises the funding gap; never taken silently from cash or reserve.</small></label>
+    </div></section>
+
+  <section class="pt-panel"><h2>5 · Life events (optional)</h2>
+    <p class="pt-hint">Pick at most one scenario. Each is a sketch on figures you enter: no probabilities, no advice. The reserve is never spent automatically.</p>
+    <div class="pt-choices" role="group" aria-label="Life event scenario">
+      <button type="button" data-life="none" class="selected">No scenario</button>
+      <button type="button" data-life="job">Job loss / move back from abroad</button>
+      <button type="button" data-life="rejected">The loan is refused</button>
+      <button type="button" data-life="death">Family continuity (loss of the earner)</button>
+    </div>
+    <div id="pt-life-fields"></div></section>
+
+  <section id="pt-results" aria-live="polite"></section>
+</main>
+<footer class="pt-footer"><span>MY HOME LOAN</span><span>A planning sketch, not financial advice. Check estimates against your lender's statement.</span></footer>
+<script src="pressure-test.js" defer></script>
+</body></html>
