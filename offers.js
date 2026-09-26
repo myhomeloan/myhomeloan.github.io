@@ -195,8 +195,15 @@ function compareOffers(a, b, startYearMonth){
   const rowsOut = { a: side(a, fa, va), b: side(b, fb, vb), warnings: [] };
   if (va.length) rowsOut.warnings.push('Offer A fails validation (' + va.join(' ') + ') and is excluded from the numeric comparison.');
   if (vb.length) rowsOut.warnings.push('Offer B fails validation (' + vb.join(' ') + ') and is excluded from the numeric comparison.');
-  if (rowsOut.a.outflowYear == null) rowsOut.warnings.push('Offer A year-one outflow is unknown (missing rate, term, or no released draw yet). Unknown is never zero, so it cannot be ranked cheaper.');
-  if (rowsOut.b.outflowYear == null) rowsOut.warnings.push('Offer B year-one outflow is unknown (missing rate, term, or no released draw yet). Unknown is never zero, so it cannot be ranked cheaper.');
+  // Say WHY it is unknown: a released draw with a blank repayment mode is not
+  // "missing rate, term, or draw" - it is a mode we refuse to guess.
+  const whyUnknown = (offer) => {
+    const hasRelease = releasedDrawsUpTo(offer, startYearMonth, 12).length > 0;
+    if (hasRelease && offer.preEmiMode !== 'interestOnly' && offer.preEmiMode !== 'emi') return 'repayment mode unknown';
+    return 'missing rate, term, or no released draw yet';
+  };
+  if (rowsOut.a.outflowYear == null) rowsOut.warnings.push('Offer A year-one outflow is unknown (' + whyUnknown(a) + '). Unknown is never zero, so it cannot be ranked cheaper.');
+  if (rowsOut.b.outflowYear == null) rowsOut.warnings.push('Offer B year-one outflow is unknown (' + whyUnknown(b) + '). Unknown is never zero, so it cannot be ranked cheaper.');
   if (fa.unknown.length) rowsOut.warnings.push('Offer A total excludes unknown fee(s): ' + fa.unknown.join(', ') + '. It is not treated as zero.');
   if (fb.unknown.length) rowsOut.warnings.push('Offer B total excludes unknown fee(s): ' + fb.unknown.join(', ') + '. It is not treated as zero.');
   if ((a.draws.length > 1 || b.draws.length > 1)) rowsOut.warnings.push('Staged draws make a simple EMI comparison misleading; the month-by-month view is the honest one.');
@@ -207,6 +214,9 @@ function provisionalReasons(offer){
   if ((offer.rateType === 'floating' || offer.rateType === 'hybrid') && !offer.resetDate) reasons.push('no reset date');
   if (!offer.draws.length) reasons.push('no draw schedule');
   if (knownFees(offer).unknown.length) reasons.push('unknown fee');
+  // A blank repayment mode is an open question, never a guessed default: the
+  // offer stays marked provisional until one is chosen.
+  if (offer.preEmiMode !== 'interestOnly' && offer.preEmiMode !== 'emi') reasons.push('repayment mode unknown');
   return reasons;
 }
 
