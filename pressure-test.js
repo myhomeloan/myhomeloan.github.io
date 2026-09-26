@@ -308,40 +308,40 @@ if (typeof document !== 'undefined') (function(){
     const kind = state.life.kind;
     if (kind === 'job') return `<div class="pt-sub">
       <p class="hint">Job loss or a move back from abroad: say which income stops and for how long, what cash arrives, and what changes. Unknown figures stay unknown.</p>
-      ${fieldHtml('j-gapStart', 'Income gap starts in month (1-12)', '', life.jobLoss.gapStart)}
-      ${fieldHtml('j-gapMonths', 'Gap length in months (2, 3 or your own)', 'A gap past month 12 shows as unknown, not recovery.', life.jobLoss.gapMonths)}
-      <label class="pt-check"><input type="checkbox" id="pt-j-otherStops"${life.jobLoss.otherStops ? ' checked' : ''}> Other reliable income stops too</label>
-      ${fieldHtml('j-severance', 'Severance or accessible cash (₹)', 'Optional one-off amount.', life.jobLoss.severance)}
-      ${fieldHtml('j-severanceMonth', 'Severance arrives in month', '', life.jobLoss.severanceMonth)}
-      ${fieldHtml('j-relocationCost', 'One-off relocation cost (₹)', 'Optional.', life.jobLoss.relocationCost)}
-      ${fieldHtml('j-relocationMonth', 'Relocation cost falls in month', '', life.jobLoss.relocationMonth)}
-      ${fieldHtml('j-newIncome', 'Replacement monthly income (₹)', 'Only if you choose a figure. Blank stays unknown.', life.jobLoss.newIncome)}
-      ${fieldHtml('j-newIncomeStart', 'Replacement income starts in month', '', life.jobLoss.newIncomeStart)}
-      ${fieldHtml('j-newRecurringCost', 'New recurring monthly cost (₹)', 'Optional, e.g. higher living costs after a move.', life.jobLoss.newRecurringCost)}
-      ${fieldHtml('j-newCostStart', 'New cost starts in month', '', life.jobLoss.newCostStart)}
+      ${fieldHtml('j-gapStart', 'Income gap starts in month (1-12)', '', state.life.jobLoss.gapStart)}
+      ${fieldHtml('j-gapMonths', 'Gap length in months (2, 3 or your own)', 'A gap past month 12 shows as unknown, not recovery.', state.life.jobLoss.gapMonths)}
+      <label class="pt-check"><input type="checkbox" id="pt-j-otherStops"${state.life.jobLoss.otherStops ? ' checked' : ''}> Other reliable income stops too</label>
+      ${fieldHtml('j-severance', 'Severance or accessible cash (₹)', 'Optional one-off amount.', state.life.jobLoss.severance)}
+      ${fieldHtml('j-severanceMonth', 'Severance arrives in month', '', state.life.jobLoss.severanceMonth)}
+      ${fieldHtml('j-relocationCost', 'One-off relocation cost (₹)', 'Optional.', state.life.jobLoss.relocationCost)}
+      ${fieldHtml('j-relocationMonth', 'Relocation cost falls in month', '', state.life.jobLoss.relocationMonth)}
+      ${fieldHtml('j-newIncome', 'Replacement monthly income (₹)', 'Only if you choose a figure. Blank stays unknown.', state.life.jobLoss.newIncome)}
+      ${fieldHtml('j-newIncomeStart', 'Replacement income starts in month', '', state.life.jobLoss.newIncomeStart)}
+      ${fieldHtml('j-newRecurringCost', 'New recurring monthly cost (₹)', 'Optional, e.g. higher living costs after a move.', state.life.jobLoss.newRecurringCost)}
+      ${fieldHtml('j-newCostStart', 'New cost starts in month', '', state.life.jobLoss.newCostStart)}
       <div class="pt-fx"><strong>Income in another currency?</strong>
-      ${fieldHtml('j-fxAmount', 'Foreign amount per month', 'Never added to ₹ without your own rate.', life.jobLoss.fxAmount)}
-      ${fieldHtml('j-fxRate', 'Your FX rate (₹ per 1 unit)', 'Enter a rate you would actually get.', life.jobLoss.fxRate)}
-      ${fieldHtml('j-fxFee', 'One-off transfer fee (₹)', '', life.jobLoss.fxFee)}
-      ${fieldHtml('j-fxStart', 'This income starts in month', '', life.jobLoss.fxStart)}</div></div>`;
+      ${fieldHtml('j-fxAmount', 'Foreign amount per month', 'Never added to ₹ without your own rate.', state.life.jobLoss.fxAmount)}
+      ${fieldHtml('j-fxRate', 'Your FX rate (₹ per 1 unit)', 'Enter a rate you would actually get.', state.life.jobLoss.fxRate)}
+      ${fieldHtml('j-fxFee', 'One-off transfer fee (₹)', '', state.life.jobLoss.fxFee)}
+      ${fieldHtml('j-fxStart', 'This income starts in month', '', state.life.jobLoss.fxStart)}</div></div>`;
     if (kind === 'rejected') return `<div class="pt-sub">
       <p class="hint">If this loan is refused: future, undisbursed money is removed. Debt already released and payments already made stay.</p>
       <div class="pt-field"><span>Where does the loan stand?</span><div class="pt-choices" role="group" aria-label="Loan status">
-        ${['expected', 'sanctioned', 'partly'].map(s => `<button type="button" data-lr="${s}" class="${life.loanRejected.status === s ? 'selected' : ''}">${s === 'partly' ? 'Partly released' : s[0].toUpperCase() + s.slice(1)}</button>`).join('')}</div></div>
-      ${fieldHtml('lr-released', 'Amount already released (₹)', 'Only if partly released.', life.loanRejected.released)}
+        ${['expected', 'sanctioned', 'partly'].map(s => `<button type="button" data-lr="${s}" class="${state.life.loanRejected.status === s ? 'selected' : ''}">${s === 'partly' ? 'Partly released' : s[0].toUpperCase() + s.slice(1)}</button>`).join('')}</div></div>
+      ${fieldHtml('lr-released', 'Amount already released (₹)', 'Only if partly released.', state.life.loanRejected.released)}
       <p class="hint">Alternatives to weigh separately: another lender, a smaller build, or a pause. Non-refundable payments already made are not recovered here.</p></div>`;
     if (kind === 'death') return `<div class="pt-sub">
       <p class="hint">Family continuity planning: if the earning person dies, what happens to income, costs and the loan? This is a careful sketch, not insurance or legal advice.</p>
-      ${fieldHtml('d-endMonth', 'Income ends from month (1-12)', '', life.earnerDeath.endMonth)}
-      <label class="pt-check"><input type="checkbox" id="pt-d-otherStops"${life.earnerDeath.otherStops ? ' checked' : ''}> Other reliable income ends too</label>
-      ${fieldHtml('d-expenseDelta', 'Monthly family expense change (₹)', 'Optional increase after the loss.', life.earnerDeath.expenseDelta)}
+      ${fieldHtml('d-endMonth', 'Income ends from month (1-12)', '', state.life.earnerDeath.endMonth)}
+      <label class="pt-check"><input type="checkbox" id="pt-d-otherStops"${state.life.earnerDeath.otherStops ? ' checked' : ''}> Other reliable income ends too</label>
+      ${fieldHtml('d-expenseDelta', 'Monthly family expense change (₹)', 'Optional increase after the loss.', state.life.earnerDeath.expenseDelta)}
       <div class="pt-field"><span>Life cover claim status</span><div class="pt-choices" role="group" aria-label="Claim status">
-        ${['none', 'pending', 'received', 'unknown'].map(s => `<button type="button" data-ed="${s}" class="${life.earnerDeath.claimStatus === s ? 'selected' : ''}">${s[0].toUpperCase() + s.slice(1)}</button>`).join('')}</div>
+        ${['none', 'pending', 'received', 'unknown'].map(s => `<button type="button" data-ed="${s}" class="${state.life.earnerDeath.claimStatus === s ? 'selected' : ''}">${s[0].toUpperCase() + s.slice(1)}</button>`).join('')}</div>
         <small class="hint">A pending or unknown claim adds ₹0 settled cash. A payout is never inferred.</small></div>
-      ${fieldHtml('d-claimAmount', 'Claim amount if received (₹)', 'Counted once, on its date; not auto-applied to the loan.', life.earnerDeath.claimAmount)}
-      ${fieldHtml('d-claimMonth', 'Claim received in month', '', life.earnerDeath.claimMonth)}
+      ${fieldHtml('d-claimAmount', 'Claim amount if received (₹)', 'Counted once, on its date; not auto-applied to the loan.', state.life.earnerDeath.claimAmount)}
+      ${fieldHtml('d-claimMonth', 'Claim received in month', '', state.life.earnerDeath.claimMonth)}
       <div class="pt-field"><span>Is there a co-borrower liable for the loan?</span><div class="pt-choices" role="group" aria-label="Co-borrower">
-        ${['yes', 'no', 'unknown'].map(s => `<button type="button" data-cb="${s}" class="${life.earnerDeath.coborrower === s ? 'selected' : ''}">${s === 'unknown' ? 'Needs confirmation' : s[0].toUpperCase() + s.slice(1)}</button>`).join('')}</div>
+        ${['yes', 'no', 'unknown'].map(s => `<button type="button" data-cb="${s}" class="${state.life.earnerDeath.coborrower === s ? 'selected' : ''}">${s === 'unknown' ? 'Needs confirmation' : s[0].toUpperCase() + s.slice(1)}</button>`).join('')}</div>
         <small class="hint">Debt is shown as continuing unless a documented discharge exists. Ask a professional to review.</small></div></div>`;
     return '';
   }
