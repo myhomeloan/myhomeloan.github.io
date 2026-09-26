@@ -131,6 +131,13 @@ eq('blank mode: outflow unknown', n1.outflow, null);
 eq('blank mode: note', n1.note, 'repayment mode unknown');
 eq('blank mode: released debt still shown', of.fromPaise(n1.balance), 600000);
 eq('blank mode: year blocked', of.compareOffers(N, N, '2027-01').a.outflowYear, null);
+// The visible comparison reason and the provisional state must both name the
+// real cause: a repayment mode we refuse to guess, not "missing rate/term/draw".
+const cmpN = of.compareOffers(N, N, '2027-01');
+eq('blank mode: warning names mode', cmpN.warnings.some(w => w.includes('repayment mode unknown')), true);
+eq('blank mode: warning not missing-rate', cmpN.warnings.some(w => w.includes('missing rate, term')), false);
+eq('blank mode: provisional names mode', of.provisionalReasons(N).includes('repayment mode unknown'), true);
+eq('chosen mode: not provisional for mode', of.provisionalReasons({ ...N, preEmiMode: 'emi' }).includes('repayment mode unknown'), false);
 eq('chosen emi mode on 600k is explicit', of.fromPaise(of.monthlyOutflow({ ...N, preEmiMode: 'emi' }, '2027-01', 1).outflow), 53309.27);
 eq('chosen pre-EMI mode on 600k is 6,000', of.fromPaise(of.monthlyOutflow({ ...N, preEmiMode: 'interestOnly' }, '2027-01', 1).outflow), 6000);
 
