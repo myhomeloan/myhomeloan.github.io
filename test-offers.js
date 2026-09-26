@@ -78,5 +78,50 @@ const H2 = { label: 'H', amount: 1200000, rateType: 'fixed', nominalPct: '', ter
   draws: [{ label: 'full', amount: 1200000, plannedDate: '2027-01', actualDate: '2027-01', status: 'released' }], fees: [], fieldStatus: {} };
 eq('blank rate -> unknown even with draws', of.monthlyOutflow(H2, '2027-01', 1).outflow, null);
 
+// Partial staged draw, full-EMI mode: only released debt exists
+const P = { label: 'P', amount: 1200000, rateType: 'fixed', nominalPct: 12, termMonths: 12, preEmiMode: 'emi',
+  draws: [{ label: 'first', amount: 100000, plannedDate: '2027-01', actualDate: '2027-01', status: 'released' }], fees: [], fieldStatus: {} };
+const p1 = of.monthlyOutflow(P, '2027-01', 1);
+eq('partial: EMI on released 100k, not sanction', of.fromPaise(p1.outflow), 8884.88);
+eq('partial: balance from released only', of.fromPaise(p1.balance), 92115.12);
+eq('partial: note says released only', p1.note, 'modeled EMI on released amount only');
+const P2 = { ...P, draws: [...P.draws, { label: 'rest', amount: 1100000, plannedDate: '2027-03', actualDate: '2027-03', status: 'released' }] };
+eq('partial: month 2 still on 100k', of.fromPaise(of.monthlyOutflow(P2, '2027-01', 2).outflow), 8884.88);
+const p3 = of.monthlyOutflow(P2, '2027-01', 3);
+eq('partial: month 3 steps up to full release', of.fromPaise(p3.outflow), 106618.55);
+eq('partial: month 3 balance rolls both releases', of.fromPaise(p3.balance), 1089374.35);
+
+// Release before the window: repayment rolls from the actual release date
+const W = { label: 'W', amount: 1200000, rateType: 'fixed', nominalPct: 12, termMonths: 12, preEmiMode: 'emi',
+  draws: [{ label: 'old', amount: 1200000, plannedDate: '2026-11', actualDate: '2026-11', status: 'released' }], fees: [], fieldStatus: {} };
+eq('pre-window: month 1 EMI continues', of.fromPaise(of.monthlyOutflow(W, '2027-01', 1).outflow), 106618.55);
+eq('pre-window: balance already 3 EMIs down', of.fromPaise(of.monthlyOutflow(W, '2027-01', 1).balance), 913296.33);
+eq('pre-window: month 10 last EMI', of.fromPaise(of.monthlyOutflow(W, '2027-01', 10).outflow), 106618.55);
+eq('pre-window: month 11 paid off, zero due', of.monthlyOutflow(W, '2027-01', 11).outflow, 0);
+eq('pre-window: month 11 note', of.monthlyOutflow(W, '2027-01', 11).note, 'paid off before this month');
+eq('pre-window: year total is 10 EMIs', of.fromPaise(of.compareOffers(W, W, '2027-01').a.outflowYear), 1066185.50);
+
+// Mid-year first release: earlier months are a truthful zero, year computable
+const M = { label: 'M', amount: 100000, rateType: 'fixed', nominalPct: 12, termMonths: 12, preEmiMode: 'emi',
+  draws: [{ label: 'mid', amount: 100000, plannedDate: '2027-06', actualDate: '2027-06', status: 'released' }], fees: [], fieldStatus: {} };
+eq('mid-year: month 1 truthful zero', of.monthlyOutflow(M, '2027-01', 1).outflow, 0);
+eq('mid-year: month 1 note', of.monthlyOutflow(M, '2027-01', 1).note, 'no release yet this month');
+eq('mid-year: year total computable', of.fromPaise(of.compareOffers(M, M, '2027-01').a.outflowYear), 62194.16);
+
+// Invalid offer excluded from the numeric comparison (visible)
+const BAD = { label: 'BAD', amount: 1200000, rateType: 'fixed', nominalPct: -5, termMonths: 12, preEmiMode: 'emi',
+  draws: [{ label: 'full', amount: 1200000, plannedDate: '2027-01', actualDate: '2027-01', status: 'released' }], fees: [], fieldStatus: {} };
+const cmpBad = of.compareOffers(A, BAD, '2027-01');
+eq('invalid offer: outflowYear null', cmpBad.b.outflowYear, null);
+eq('invalid offer: balanceEnd null', cmpBad.b.balanceEnd, null);
+eq('invalid offer: errors listed', cmpBad.b.errors.length > 0, true);
+eq('invalid offer: exclusion warning', cmpBad.warnings.some(w => w.includes('Offer B fails validation')), true);
+eq('invalid offer: valid side still numeric', of.fromPaise(cmpBad.a.outflowYear), 1279422.60);
+
+// Known fee with blank amount is unknown, never zero
+const feeBlank = of.knownFees({ fees: [{ label: 'Processing', amount: '', financed: false, known: true }] });
+eq('known fee blank amount: not in cash', feeBlank.cash, 0);
+eq('known fee blank amount: listed unknown', feeBlank.unknown.join(','), 'Processing (marked known but no amount entered)');
+
 console.log(fails ? `\n${fails} FAILURES` : '\nALL PASS');
 process.exit(fails ? 1 : 0);
