@@ -6,17 +6,34 @@ const eq = (n, g, w) => { const ok = g === w; if (!ok){ fails++; console.log('FA
 const inp = { income: 150000, essentials: 55000, debt: 12000, goal: 20000, rent: 18000 };
 const r = oc.compute(inp);
 eq('ready', r.ready, true);
+eq('rent known', r.rentKnown, true);
 eq('set-aside 63,000', oc.fromPaise(r.setAside), 63000);
-eq('1m rent loss', oc.fromPaise(r.oneMonth.rentPaid), 18000);
-eq('1m saved gain', oc.fromPaise(r.oneMonth.saved), 45000);
-eq('1y rent loss', oc.fromPaise(r.oneYear.rentPaid), 216000);
-eq('1y saved gain', oc.fromPaise(r.oneYear.saved), 540000);
+eq('1m monthly cashflow 45,000', oc.fromPaise(r.oneMonth.monthlyFlow), 45000);
+eq('1m cash saved 45,000', oc.fromPaise(r.oneMonth.cashSaved), 45000);
+eq('1m rent paid 18,000', oc.fromPaise(r.oneMonth.rentPaid), 18000);
+eq('1y cash saved 5,40,000', oc.fromPaise(r.oneYear.cashSaved), 540000);
+eq('1y rent paid 2,16,000', oc.fromPaise(r.oneYear.rentPaid), 216000);
 
-// Optionals blank: debt/goal/rent default 0, still ready
+// No gain/loss framing anywhere in the model or caveats
+eq('no loss wording in caveats', r.caveats.some(c => /loss|gain/i.test(c) && !/no numeric gain or loss/i.test(c)), false);
+
+// Blank rent: unknown, gated - never a 0 row of numbers
 const r2 = oc.compute({ income: 100000, essentials: 60000, debt: '', goal: '', rent: '' });
-eq('optionals blank ready', r2.ready, true);
-eq('no rent -> saved = full set-aside', oc.fromPaise(r2.oneMonth.saved), 40000);
-eq('no rent caveat', r2.caveats.some(c => c.includes('No rent entered')), true);
+eq('blank rent: still ready (set-aside shown)', r2.ready, true);
+eq('blank rent: rentKnown false', r2.rentKnown, false);
+eq('blank rent: horizons gated', r2.oneMonth === null && r2.oneYear === null, true);
+eq('blank rent: set-aside still computed', oc.fromPaise(r2.setAside), 40000);
+
+// Explicit 0 rent is a real answer, distinct from blank
+const r0 = oc.compute({ income: 100000, essentials: 60000, debt: '', goal: '', rent: 0 });
+eq('explicit 0 rent: known', r0.rentKnown, true);
+eq('explicit 0 rent: cashflow = set-aside', oc.fromPaise(r0.oneMonth.monthlyFlow), 40000);
+eq('explicit 0 rent: rent paid 0, honestly', oc.fromPaise(r0.oneMonth.rentPaid), 0);
+eq('explicit 0 rent: noted in caveats', r0.caveats.some(c => c.includes('0 rent')), true);
+eq('explicit 0 differs from blank', r0.oneMonth !== null && r2.oneMonth === null, true);
+
+// No buy-now counterfactual is claimed
+eq('buy-now caveat stated', r.caveats.some(c => c.includes('No buy-now scenario is modeled')), true);
 
 // Negative month flagged, never silently zeroed
 const r3 = oc.compute({ income: 50000, essentials: 60000, debt: '', goal: '', rent: 5000 });
@@ -31,8 +48,8 @@ eq('blank income is missing not invalid', r4.missing.includes('income') && r4.in
 eq('negative rent blocked', oc.compute({ ...inp, rent: -1 }).ready, false);
 eq('absurd income blocked', oc.compute({ ...inp, income: 1e10 }).ready, false);
 
-// delayOutcome guards
-eq('zero months rejected', oc.delayOutcome(100, 0, 0), null);
+// waitCashflow guards
+eq('zero months rejected', oc.waitCashflow(100, 0, 0), null);
 
 // Caveats present and plain
 const cav = oc.whatIfCaveats();
