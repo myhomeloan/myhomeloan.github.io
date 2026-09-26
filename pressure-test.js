@@ -163,7 +163,19 @@ function computeAll(a, rows, stress, life){
     && (stress.dropStart === '' || (Number.isInteger(Number(stress.dropStart)) && Number(stress.dropStart) >= 1 && Number(stress.dropStart) <= 12))
     && (stress.dropMonths === '' || (Number.isInteger(Number(stress.dropMonths)) && Number(stress.dropMonths) >= 0 && Number(stress.dropMonths) <= 12))
     && (stress.overrun === '' || Number(stress.overrun) >= 0);
-  if (missing.length || !stressOk) return { ready: false, missing, stressOk };
+  // Calc-level range validation, fail closed. Blank required fields stay in
+  // `missing` above - unknown stays unknown; only ENTERED values are range-checked
+  // here, and nothing is ever clamped to fit.
+  const invalid = [];
+  const finiteIn = (v, lo, hi) => Number.isFinite(Number(v)) && Number(v) >= lo && Number(v) <= hi;
+  if (!missing.includes('income') && !finiteIn(a.income, 0, 1e9)) invalid.push('income outside 0-1,000,000,000');
+  if (!missing.includes('projectCost') && !finiteIn(a.projectCost, 0, 1e11)) invalid.push('project cost outside 0-100,000,000,000');
+  if (!missing.includes('rate') && !finiteIn(a.rate, 0, 60)) invalid.push('rate outside 0-60%');
+  if (!missing.includes('years') && !(Number.isInteger(Number(a.years)) && Number(a.years) >= 1 && Number(a.years) <= 40)) invalid.push('years must be a whole number 1-40');
+  const rp = stress.ratePlus === '' || stress.ratePlus == null ? 0 : Number(stress.ratePlus);
+  if (!Number.isFinite(rp) || rp < -10 || rp > 20) invalid.push('rate stress outside -10..+20 points');
+  else if (!missing.includes('rate') && !finiteIn(Number(a.rate) + rp, 0, 60)) invalid.push('rate plus stress must stay within 0-60%');
+  if (missing.length || !stressOk || invalid.length) return { ready: false, missing, stressOk, invalid };
 
   const months = [];
   for (let m = 1; m <= 12; m++) months.push(computeMonth(a, rows, stress, life, m));
@@ -396,7 +408,7 @@ if (typeof document !== 'undefined') (function(){
     const scen = computeAll(state.a, rows, state.stress, state.life);
     const out = $('pt-results');
     if (!base.ready){
-      out.innerHTML = `<div class="pt-panel"><h3>Your answer appears here</h3><p class="hint">${base.missing.length ? 'Still needed before anything is calculated (a blank is unknown, never zero): ' + esc(base.missing.join(', ')) + '.' : ''}${!base.stressOk ? ' Check the pressure-test entries: drop 0-100%, start month 1-12, whole-month duration 0-12, and a non-negative extra cost.' : ''}</p></div>`;
+      out.innerHTML = `<div class="pt-panel"><h3>Your answer appears here</h3><p class="hint">${base.missing.length ? 'Still needed before anything is calculated (a blank is unknown, never zero): ' + esc(base.missing.join(', ')) + '.' : ''}${!base.stressOk ? ' Check the pressure-test entries: drop 0-100%, start month 1-12, whole-month duration 0-12, and a non-negative extra cost.' : ''}${base.invalid && base.invalid.length ? ' Outside a safe range (nothing was clamped): ' + esc(base.invalid.join('; ')) + '.' : ''}</p></div>`;
       return;
     }
     const stressed = scen.ready && (Number(state.stress.ratePlus) > 0 || Number(state.stress.dropPct) > 0 || Number(state.stress.overrun) > 0 || state.life.kind !== 'none');
@@ -412,6 +424,9 @@ if (typeof document !== 'undefined') (function(){
       stat('Project funding gap', fmt(base.fundingGap), base.surplus > 0 ? 'Surplus of ' + fmt(base.surplus) + ' above the entered cost' : 'Cost less own contribution and counted loan') +
       stat('Reserve headroom', fmt(base.reserveHeadroom), 'Settled cash less contribution, promises and reserve') +
       `</div>`;
+    if (base.ready && !scen.ready){
+      html += `<p class="pt-alert">The what-if entries are outside a safe range, so the scenario is not calculated${scen.invalid && scen.invalid.length ? ': ' + esc(scen.invalid.join('; ')) : ''}. Nothing was clamped.</p>`;
+    }
     if (stressed && scen.ready){
       html += `<h3>What-if view${lifeName ? ' · ' + esc(lifeName) : ''}</h3><div class="pt-cards">` +
         stat('EMI under test', fmt(scen.emiUsed), Number(state.stress.ratePlus) > 0 ? 'Rate +' + state.stress.ratePlus + ' points' : 'Same loan terms') +
