@@ -81,5 +81,19 @@ eq('blank income blocks', incomplete.ready, false);
 eq('bad stress blocks', pt.computeAll(a, rows, { ratePlus: 0, dropPct: 120, dropStart: 1, dropMonths: 3, overrun: '' }, noLife).ready, false);
 eq('rate stress raises EMI', pt.computeAll(a, rows, { ratePlus: 1, dropPct: '', dropStart: '', dropMonths: '', overrun: '' }, noLife).emiUsed > base.emiUsed, true);
 
+// Calc-level range validation: fail closed, unknown stays unknown
+eq('negative rate blocked', pt.computeAll({ ...a, rate: -5 }, rows, noStress, noLife).ready, false);
+eq('ratePlus -14 makes rate negative: blocked', pt.computeAll(a, rows, { ratePlus: -14, dropPct: '', dropStart: '', dropMonths: '', overrun: '' }, noLife).ready, false);
+eq('ratePlus -20 blocked outright', pt.computeAll(a, rows, { ratePlus: -20, dropPct: '', dropStart: '', dropMonths: '', overrun: '' }, noLife).ready, false);
+eq('ratePlus NaN blocked', pt.computeAll(a, rows, { ratePlus: 'abc', dropPct: '', dropStart: '', dropMonths: '', overrun: '' }, noLife).ready, false);
+eq('zero years blocked', pt.computeAll({ ...a, years: 0 }, rows, noStress, noLife).ready, false);
+eq('fractional years blocked', pt.computeAll({ ...a, years: 2.5 }, rows, noStress, noLife).ready, false);
+eq('41 years blocked', pt.computeAll({ ...a, years: 41 }, rows, noStress, noLife).ready, false);
+eq('negative cost blocked', pt.computeAll({ ...a, projectCost: -1 }, rows, noStress, noLife).ready, false);
+eq('negative income blocked', pt.computeAll({ ...a, income: -1 }, rows, noStress, noLife).ready, false);
+const blankRate = pt.computeAll({ ...a, rate: '' }, rows, noStress, noLife);
+eq('blank rate stays unknown, not invalid', blankRate.ready === false && blankRate.missing.includes('rate') && blankRate.invalid.length === 0, true);
+eq('valid +2 stress still passes', pt.computeAll(a, rows, { ratePlus: 2, dropPct: '', dropStart: '', dropMonths: '', overrun: '' }, noLife).ready, true);
+
 console.log(fails ? `\n${fails} FAILURES` : '\nALL PASS');
 process.exit(fails ? 1 : 0);
