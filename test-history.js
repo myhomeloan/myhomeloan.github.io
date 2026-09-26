@@ -31,5 +31,19 @@ eq('updatedAt not a change', H.diffPlans(planA, planF).length, 0);
 eq('hash deterministic', H.planHash(planA), H.planHash(JSON.parse(JSON.stringify(planA))));
 eq('hash differs on change', H.planHash(planA) !== H.planHash(planB), true);
 
+// checkBaseRevision fails closed (with a localStorage stub)
+const store = {};
+global.localStorage = { getItem: k => (k in store ? store[k] : null), setItem: (k, v) => { store[k] = String(v); }, removeItem: k => { delete store[k]; } };
+H.init({ getPlan: () => planA, planStorageKey: 'mhl-visitor-plan-v1', onConflict: () => {}, onNotify: () => {} });
+eq('missing stored plan fails closed', H.checkBaseRevision(H.planHash(planA)).ok, false);
+store['mhl-visitor-plan-v1'] = JSON.stringify(planA);
+eq('clean base is the only ok', H.checkBaseRevision(H.planHash(planA)).ok, true);
+eq('changed stored plan is conflict, not ok', H.checkBaseRevision(H.planHash(planB)).ok, false);
+store['mhl-visitor-plan-v1'] = '{corrupt';
+const corrupt = H.checkBaseRevision(H.planHash(planA));
+eq('corrupt stored plan fails closed', corrupt.ok, false);
+eq('corrupt state named', corrupt.state, 'stored-plan-unreadable');
+eq('missing base hash fails closed', H.checkBaseRevision('').ok, false);
+
 console.log(fails ? `\n${fails} FAILURES` : '\nALL PASS');
 process.exit(fails ? 1 : 0);
