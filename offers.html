@@ -31,7 +31,7 @@ body{margin:0;color:#20342e;background:#f7f5ed;font:15px/1.6 'DM Sans',system-ui
 .lo-flags .lo-clear{border-color:#d9b8b8;color:#8a3b3b}
 .lo-draw,.lo-fee{display:grid;grid-template-columns:1.2fr 1fr .9fr .9fr .8fr auto;gap:8px;margin-top:8px;align-items:center}
 .lo-fee{grid-template-columns:1.4fr 1fr auto auto auto}
-.lo-draw input,.lo-draw select,.lo-fee input{padding:9px;border:1px solid #aaa;border-radius:6px;min-height:44px;font:inherit;width:100%;box-sizing:border-box}
+.lo-draw input,.lo-draw select,.lo-fee input{padding:9px;border:1px solid #aaa;border-radius:6px;min-height:44px;font:inherit;width:100%;min-width:0;box-sizing:border-box}
 .lo-fee label{display:flex;gap:6px;align-items:center;font-size:13px}
 .lo-del{border:1px solid #d9b8b8;background:#fff;color:#8a3b3b;border-radius:8px;padding:9px 12px;cursor:pointer;font:inherit}
 .lo-check{display:flex;gap:8px;align-items:center;margin-top:8px;font-weight:600}
@@ -47,7 +47,7 @@ body{margin:0;color:#20342e;background:#f7f5ed;font:15px/1.6 'DM Sans',system-ui
 .lo-startrow{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
 .lo-startrow input{padding:9px;border:1px solid #aaa;border-radius:6px;min-height:44px;font:inherit}
 .lo-footer{display:flex;justify-content:space-between;padding:22px;color:#65776f;font-size:13px}
-@media(max-width:700px){.lo-cards{grid-template-columns:1fr}.lo-draw,.lo-fee{grid-template-columns:1fr 1fr}.lo-wrap{padding:14px}}
+@media(max-width:700px){.lo-cards{grid-template-columns:1fr}.lo-draw,.lo-fee{grid-template-columns:repeat(2,minmax(0,1fr))}.lo-wrap{padding:14px}}
 </style></head>
 <body>
 <header class="lo-topbar"><span class="lo-mark" aria-hidden="true">⌂</span><a class="lo-brand" href="index.html">MY HOME LOAN<span>PLAN · TRACK · DECIDE</span></a><span class="lo-chip">Local-first · nothing leaves this browser</span></header>
