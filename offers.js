@@ -110,6 +110,9 @@ function monthlyOutflow(offer, startYearMonth, m){
     // Zero is the truth for THIS month (unlike the never-released case).
     return { outflow: 0, balance: 0, note: 'no release yet this month' };
   }
+  // Never guess the repayment mode: a blank choice is unknown, never a default
+  // full EMI. The numeric comparison stays blocked until one is chosen.
+  if (offer.preEmiMode !== 'interestOnly' && offer.preEmiMode !== 'emi') return { outflow: null, balance: drawnTotal, note: 'repayment mode unknown' };
   const fullyDrawn = offer.amount !== '' && drawnTotal >= toPaise(offer.amount);
   if (offer.preEmiMode === 'interestOnly' && !fullyDrawn){
     return { outflow: preEmiInterestPaise(drawnTotal, rate), balance: drawnTotal, note: 'pre-EMI interest on released amount' };
